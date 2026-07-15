@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Zap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Zap } from 'lucide-react';
 import CodeBlock from '@/components/CodeBlock';
 import Callout from '@/components/Callout';
 
@@ -75,7 +75,7 @@ export const updateUsername = withServerAction({
       <div className="h-[1px] bg-white/10 pt-4" />
 
       {/* Navigation Précédent / Suivant */}
-      <div className="flex justify-start items-center pt-4">
+      <div className="flex justify-between items-center pt-4">
         <Link
           href="/docs/primitives/get-post-handler"
           className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-left transition-all flex items-center gap-3 select-none"
@@ -89,6 +89,21 @@ export const updateUsername = withServerAction({
               createGetHandler / createPostHandler
             </span>
           </div>
+        </Link>
+
+        <Link
+          href="/docs/primitives/webhook"
+          className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-right transition-all flex items-center gap-3 select-none"
+        >
+          <div>
+            <span className="block text-[10px] font-mono uppercase tracking-wider text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors">
+              Suivant
+            </span>
+            <span className="block text-xs font-bold text-white">
+              createWebhookHandler()
+            </span>
+          </div>
+          <ChevronRight size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />
         </Link>
       </div>
 

@@ -61,6 +61,36 @@ export function withServerAction<S extends z.ZodType, R>(options: {
 }): (input: z.infer<S>) => Promise<Result<R, Error>>;
 \`\`\`
 
+### 5. withPagination
+Server wrapper that parses and normalizes standard pagination search parameters (page, limit, cursor) and secures the query with maxLimit protection.
+\`\`\`typescript
+export interface ResolvedPaginationParams {
+  page: number;
+  limit: number;
+  offset: number;
+  cursor?: string;
+}
+
+export function withPagination<TInput, TItem>(
+  fetcher: (args: { params: ResolvedPaginationParams; input: TInput }) => Promise<{ items: TItem[]; total?: number; nextCursor?: string }>,
+  options?: { defaultLimit?: number; maxLimit?: number }
+): (rawParams: any, input: TInput) => Promise<Result<Paginated<TItem>, Error>>;
+\`\`\`
+
+### 6. withIdempotency
+Guarantees a sensitive action is executed exactly once by validating and locking an Idempotency-Key.
+\`\`\`typescript
+export function withIdempotency<TArgs extends any[], TResult>(
+  action: (...args: TArgs) => Promise<TResult>,
+  options?: {
+    store?: IdempotencyStore;
+    ttlSeconds?: number;
+    getKey?: (...args: any[]) => string | null | undefined;
+    pendingMessage?: string;
+  }
+): (...args: TArgs) => Promise<Result<TResult, Error>>;
+\`\`\`
+
 ## CLI Commands Reference
 - \`npx serverpatterns init\` - Set up the config and initialize the API client.
 - \`npx serverpatterns add api <name>\` - Create a route handler at \`app/api/<name>/route.ts\`.

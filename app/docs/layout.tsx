@@ -159,6 +159,10 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                 { name: 'createApiClient()', path: '/docs/primitives/api-client' },
                 { name: 'createGetHandler()', path: '/docs/primitives/get-post-handler' },
                 { name: 'withServerAction()', path: '/docs/primitives/server-action' },
+                { name: 'createWebhookHandler()', path: '/docs/primitives/webhook' },
+                { name: 'withAuth()', path: '/docs/primitives/auth' },
+                { name: 'withPagination()', path: '/docs/primitives/pagination' },
+                { name: 'withIdempotency()', path: '/docs/primitives/idempotency' },
               ].map((item) => {
                 const active = isActive(item.path);
                 return (

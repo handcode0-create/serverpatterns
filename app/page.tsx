@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
   ArrowRight,
   Terminal,
@@ -20,7 +21,10 @@ import {
   Network,
   Info,
   Lock,
-  AlertCircle
+  AlertCircle,
+  Webhook,
+  ListOrdered,
+  ShieldCheck
 } from 'lucide-react';
 import ChaosAnimation from '@/components/ChaosAnimation';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
@@ -355,7 +359,7 @@ export default function Home() {
           
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="font-display font-semibold text-3xl md:text-5xl text-white tracking-tight leading-tight mb-4">
-              Quatre abstractions pour imposer <span className="italic font-light text-[#FF6A00]">l&apos;ordre strict</span>
+              Six abstractions pour imposer <span className="italic font-light text-[#FF6A00]">l&apos;ordre strict</span>
             </h2>
             <p className="text-sm text-[#8E8E8A] leading-relaxed">
               Inspiré des plus beaux bento-grids fonctionnels : clique, saisis des valeurs et teste en direct comment ServerPatterns élimine le désordre de ta couche Next.js.
@@ -658,6 +662,110 @@ render(res.value);`}
 });`}
                   title="src/app/actions/tasks.ts"
                 />
+              </div>
+
+            </div>
+
+            {/* CARD 5: createWebhookHandler (MEDIUM CARD - col-span-6) */}
+            <div className="lg:col-span-6 bg-[#121212] border border-white/5 rounded-2xl p-6 flex flex-col justify-between group hover:border-[#FF6A00]/20 transition-all duration-300">
+              
+              <div className="space-y-4">
+                <div className="inline-flex p-2.5 rounded-xl bg-[#FF6A00]/10 text-[#FF6A00]">
+                  <Webhook size={18} />
+                </div>
+                <h3 className="font-display text-xl font-bold text-white">
+                  createWebhookHandler()
+                </h3>
+                <p className="text-xs text-[#8E8E8A] leading-relaxed">
+                  Gère et valide les webhooks Stripe, Lemon Squeezy ou GitHub de façon sécurisée et compatible Edge Runtime. Ce wrapper extrait le corps brut exact pour auditer cryptographiquement la signature HMAC-SHA256 en arrière-plan.
+                </p>
+
+                <div className="bg-black/40 border border-white/5 p-4 rounded-xl flex flex-col gap-2 font-mono text-xs text-[#8E8E8A]">
+                  <div className="text-[10px] text-white font-semibold flex items-center justify-between border-b border-white/5 pb-1.5">
+                    <span>Validation Web Crypto API</span>
+                    <span className="text-[9px] text-[#FF6A00]">Fast &amp; Edge-Ready</span>
+                  </div>
+                  <div className="text-[11px] leading-relaxed">
+                    <span className="text-green-400">✓</span> Lecture du <code className="text-white text-[10px]">rawBody</code> à l&apos;exécution<br />
+                    <span className="text-green-400">✓</span> Compatibilité totale Vercel Edge &amp; Cloudflare Workers<br />
+                    <span className="text-green-400">✓</span> Gestion des erreurs automatisée avec codes HTTP standards
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 border-t border-white/5 pt-4">
+                <CodeBlock 
+                  code={`export const POST = createWebhookHandler({
+  signatureHeader: 'stripe-signature',
+  secret: () => process.env.STRIPE_SECRET!,
+  verify: async (rawBody, signature, secret) => {
+    return await verifyHmacSha256Signature(rawBody, signature, secret);
+  },
+  handler: async ({ body }) => {
+    return { status: 200, body: { received: true } };
+  }
+});`}
+                  title="src/app/api/webhooks/stripe/route.ts"
+                />
+                <div className="mt-3 flex justify-end">
+                  <Link 
+                    href="/docs/primitives/webhook"
+                    className="text-[10px] font-mono uppercase tracking-wider text-[#FF6A00] hover:text-white transition flex items-center gap-1"
+                  >
+                    Documentation complète ↳
+                  </Link>
+                </div>
+              </div>
+
+            </div>
+
+            {/* CARD 6: withAuth (MEDIUM CARD - col-span-6) */}
+            <div className="lg:col-span-6 bg-[#121212] border border-white/5 rounded-2xl p-6 flex flex-col justify-between group hover:border-[#FF6A00]/20 transition-all duration-300">
+              
+              <div className="space-y-4">
+                <div className="inline-flex p-2.5 rounded-xl bg-[#FF6A00]/10 text-[#FF6A00]">
+                  <Lock size={18} />
+                </div>
+                <h3 className="font-display text-xl font-bold text-white">
+                  withAuth()
+                </h3>
+                <p className="text-xs text-[#8E8E8A] leading-relaxed">
+                  Bâtis un middleware d&apos;authentification et d&apos;autorisation de niveau entreprise (RBAC/ABAC). Encapsule tes Server Actions ou tes fonctions serveur pour valider les privilèges d&apos;accès en amont.
+                </p>
+
+                <div className="bg-black/40 border border-white/5 p-4 rounded-xl flex flex-col gap-2 font-mono text-xs text-[#8E8E8A]">
+                  <div className="text-[10px] text-white font-semibold flex items-center justify-between border-b border-white/5 pb-1.5">
+                    <span>Middleware d&apos;Autorisation</span>
+                    <span className="text-[9px] text-[#FF6A00]">RBAC &amp; ABAC</span>
+                  </div>
+                  <div className="text-[11px] leading-relaxed">
+                    <span className="text-green-400">✓</span> Résolveur global de session configurable<br />
+                    <span className="text-green-400">✓</span> Contrôle par rôles (<code className="text-white text-[10px]">roles: [&apos;admin&apos;]</code>)<br />
+                    <span className="text-green-400">✓</span> Autorisation fine contextuelle par rapport à l&apos;input
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 border-t border-[#FF6A00]/10 pt-4">
+                <CodeBlock 
+                  code={`export const deleteUser = withAuth({
+  roles: ['admin'],
+  authorize: async (user, input) => {
+    return user.id !== input.targetUserId;
+  }
+}, async ({ input, user }) => {
+  return await db.users.delete(input.targetUserId);
+});`}
+                  title="src/app/actions/admin.ts"
+                />
+                <div className="mt-3 flex justify-end">
+                  <Link 
+                    href="/docs/primitives/auth"
+                    className="text-[10px] font-mono uppercase tracking-wider text-[#FF6A00] hover:text-white transition flex items-center gap-1"
+                  >
+                    Documentation complète ↳
+                  </Link>
+                </div>
               </div>
 
             </div>
