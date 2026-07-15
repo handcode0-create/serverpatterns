@@ -1,0 +1,6 @@
+{
+  "name": "ServerPatterns",
+  "description": "Le site officiel du framework ServerPatterns, un framework de patterns serveur pour Next.js App Router par HANCODE STUDIO.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
