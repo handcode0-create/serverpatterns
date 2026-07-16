@@ -173,7 +173,7 @@ export default function CreateTaskForm() {
         </Link>
 
         <Link
-          href="/docs/cli"
+          href="/docs/guide-feedback-board"
           className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-right transition-all flex items-center gap-3 select-none"
         >
           <div>
@@ -181,7 +181,7 @@ export default function CreateTaskForm() {
               Suivant
             </span>
             <span className="block text-xs font-bold text-white">
-              Référence CLI
+              Guide Canonique 🏆
             </span>
           </div>
           <ChevronRight size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />

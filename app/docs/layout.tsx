@@ -92,6 +92,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                 { name: 'Introduction', path: '/docs' },
                 { name: 'Installation', path: '/docs/installation' },
                 { name: 'Quickstart (10m)', path: '/docs/quickstart' },
+                { name: 'Guide Canonique 🏆', path: '/docs/guide-feedback-board' },
                 { name: 'Agents IA 🤖', path: '/docs/ai-agents' },
                 { name: 'Changelog', path: '/docs/changelog' },
               ].map((item) => {
@@ -243,7 +244,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             </p>
             <a
               id="docs-github-star-button"
-              href="https://github.com/hancode-studio/serverpatterns"
+              href="https://github.com/handcode0-create/serverpatterns"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full bg-white/5 hover:bg-white/10 text-white font-mono text-[10px] uppercase tracking-wider py-2 rounded-lg border border-white/10 transition hover:border-[#FF6A00]/30"

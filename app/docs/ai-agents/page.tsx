@@ -141,7 +141,7 @@ Ce projet utilise le framework ServerPatterns pour normaliser la couche serveur.
       {/* Navigation Précédent / Suivant */}
       <div className="flex justify-between items-center pt-8 border-t border-white/5">
         <Link
-          href="/docs/changelog"
+          href="/docs/guide-feedback-board"
           className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-left transition-all flex items-center gap-3 select-none"
         >
           <ChevronLeft size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />
@@ -150,7 +150,7 @@ Ce projet utilise le framework ServerPatterns pour normaliser la couche serveur.
               Précédent
             </span>
             <span className="block text-xs font-bold text-white">
-              Changelog Général
+              Guide Canonique 🏆
             </span>
           </div>
         </Link>

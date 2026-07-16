@@ -141,13 +141,13 @@ export default function Home() {
               <div className="flex items-center justify-between text-xs font-mono font-bold border-t border-black/10 pt-4">
                 <a 
                   id="quickstart-github"
-                  href="https://github.com/hancode-studio/serverpatterns" 
+                  href="https://github.com/handcode0-create/serverpatterns" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="flex items-center gap-1.5 hover:underline"
                 >
                   <Github size={12} />
-                  <span>hancode/serverpatterns</span>
+                  <span>handcode0-create/serverpatterns</span>
                 </a>
                 <a 
                   id="quickstart-docs"
@@ -188,85 +188,79 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Asymmetric Problem Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            
-            {/* Major Pain Point (Left - lg:col-span-7) */}
-            <div className="lg:col-span-7 flex flex-col justify-between bg-white/[0.02] border border-white/5 rounded-2xl p-8 relative overflow-hidden group hover:border-[#FF6A00]/20 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF6A00]/5 rounded-full blur-2xl pointer-events-none" />
-              
-              <div>
-                <div className="flex items-center gap-2 text-xs font-mono text-[#FF6A00] mb-4">
-                  <span className="font-bold">▲</span>
-                  <span>DUPLICATION DU CHEMIN DE FER</span>
-                </div>
-                <h3 className="font-display font-bold text-2xl text-white mb-4">
+          {/* Typographic Minimalist List (Replacing Bento Grid) */}
+          <div className="mt-16 divide-y divide-white/10 border-t border-white/10">
+            {/* Problem 1 */}
+            <div className="py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-3 flex items-center gap-3">
+                <span className="font-mono text-[#FF6A00] font-bold text-sm">01</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#FF6A00] bg-[#FF6A00]/10 px-2 py-0.5 rounded">Duplication</span>
+              </div>
+              <div className="lg:col-span-5">
+                <h3 className="font-display font-semibold text-lg md:text-xl text-white mb-3">
                   La fragmentation et la duplication des wrappers HTTP
                 </h3>
-                <p className="text-sm text-[#8E8E8A] leading-relaxed mb-6">
+                <p className="text-sm text-[#8E8E8A] leading-relaxed">
                   Chaque fichier recrée son propre mécanisme d&apos;authentification, de token refresh, et d&apos;intercepteurs réseau. Vous vous retrouvez avec des fonctions d&apos;utilitaires concurrentes et instables qui enflent à chaque commit.
                 </p>
-
-                {/* Styled dirty code illustration */}
-                <div className="bg-black/40 border border-white/5 rounded-xl p-4 font-mono text-[10px] text-[#52524E] mb-6">
-                  <div className="text-[#FF6A00]/50">{"// Le cauchemar habituel dans 12 fichiers différents"}</div>
-                  <div><span className="text-red-500/80">const</span> fetchUsers = <span className="text-[#8E8E8A]">async</span> () =&gt; &#123;</div>
-                  <div className="pl-4"><span className="text-red-500/80">try</span> &#123;</div>
-                  <div className="pl-8"><span className="text-red-500/80">const</span> res = <span className="text-red-500/80">await</span> fetch(<span className="text-[#8E8E8A]">&apos;/api/users&apos;</span>, &#123; <span className="text-[#FF6A00]/70">headers: ...</span> &#125;)</div>
-                  <div className="pl-8"><span className="text-[#FF6A00]/50">{"// Oh wait, comment on rafraîchit le token ici déjà ?"}</span></div>
-                  <div className="pl-4">&#125; <span className="text-red-500/80">catch</span> (err) &#123; <span className="text-red-500/80">throw</span> err; &#125;</div>
+              </div>
+              <div className="lg:col-span-4 flex flex-col gap-3 lg:pl-8">
+                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 font-mono text-[10px] text-[#52524E]">
+                  <div className="text-[#FF6A00]/50 mb-1">{"// Le cauchemar habituel dans 12 fichiers"}</div>
+                  <div><span className="text-[#FF6A00]/80">const</span> fetchUsers = <span className="text-white/60">async</span> () =&gt; &#123;</div>
+                  <div className="pl-3"><span className="text-[#FF6A00]/80">const</span> res = <span className="text-white/60">await</span> fetch(<span className="text-[#8E8E8A]">&apos;/api/users&apos;</span>)</div>
                   <div>&#125;</div>
                 </div>
-              </div>
-
-              <div className="font-mono text-xs text-[#E2E2DF] bg-white/5 px-3 py-2 rounded-lg border border-white/5 w-fit mt-auto">
-                <span className="text-red-500 font-bold">Conséquence :</span> Maintenance lourde &amp; instabilité d&apos;authentification.
+                <div className="font-mono text-[11px] text-red-400/90 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  <span>Conséquence : Maintenance lourde &amp; instabilité d&apos;authentification.</span>
+                </div>
               </div>
             </div>
 
-            {/* Compact Pain Points (Right - lg:col-span-5 - Vertical stack) */}
-            <div className="lg:col-span-5 flex flex-col gap-6">
-              
-              {/* Problem 2 */}
-              <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-6 flex flex-col justify-between hover:border-[#FF6A00]/20 transition-all duration-300">
-                <div>
-                  <div className="flex items-center gap-2 text-xs font-mono text-[#FF6A00] mb-3">
-                    <span className="font-bold">▲</span>
-                    <span>INCOHÉRENCE DES ERREURS</span>
-                  </div>
-                  <h4 className="font-display font-semibold text-lg text-white mb-2">
-                    L&apos;enfer des try/catch asynchrones
-                  </h4>
-                  <p className="text-xs text-[#8E8E8A] leading-relaxed">
-                    Le code est saturé de blocs try/catch imbriqués. Parfois l&apos;erreur est avalée, parfois elle fait fuiter des logs internes d&apos;infrastructure SQL dans le navigateur client, violant la sécurité du produit.
-                  </p>
-                </div>
-                <div className="mt-4 font-mono text-[10px] text-[#52524E] border-t border-white/5 pt-3">
-                  <span className="text-red-500/80">RISQUE:</span> Fuites de sécurité &amp; débogage client impossible.
+            {/* Problem 2 */}
+            <div className="py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-3 flex items-center gap-3">
+                <span className="font-mono text-[#FF6A00] font-bold text-sm">02</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#FF6A00] bg-[#FF6A00]/10 px-2 py-0.5 rounded">Erreurs</span>
+              </div>
+              <div className="lg:col-span-5">
+                <h3 className="font-display font-semibold text-lg md:text-xl text-white mb-3">
+                  L&apos;enfer des try/catch asynchrones
+                </h3>
+                <p className="text-sm text-[#8E8E8A] leading-relaxed">
+                  Le code est saturé de blocs try/catch imbriqués. Parfois l&apos;erreur est avalée, parfois elle fait fuiter des logs internes d&apos;infrastructure SQL dans le navigateur client, violant la sécurité du produit.
+                </p>
+              </div>
+              <div className="lg:col-span-4 flex flex-col justify-center lg:pl-8 h-full lg:pt-4">
+                <div className="font-mono text-[11px] text-red-400/90 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  <span>Risque : Fuites de sécurité &amp; débogage client impossible.</span>
                 </div>
               </div>
-
-              {/* Problem 3 */}
-              <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-6 flex flex-col justify-between hover:border-[#FF6A00]/20 transition-all duration-300">
-                <div>
-                  <div className="flex items-center gap-2 text-xs font-mono text-[#FF6A00] mb-3">
-                    <span className="font-bold">▲</span>
-                    <span>TYPAGE SILENCIEUSEMENT FAUX</span>
-                  </div>
-                  <h4 className="font-display font-semibold text-lg text-white mb-2">
-                    La validation d&apos;entrée &quot;Any&quot; déguisée
-                  </h4>
-                  <p className="text-xs text-[#8E8E8A] leading-relaxed">
-                    Même si TypeScript compile, les données qui transitent via les formulaires ou le réseau ne sont jamais formellement analysées par Zod au moment de l&apos;exécution, créant des plantages silencieux en production.
-                  </p>
-                </div>
-                <div className="mt-4 font-mono text-[10px] text-[#52524E] border-t border-white/5 pt-3">
-                  <span className="text-red-500/80">RISQUE:</span> Plantages en production &amp; faux sentiment de sécurité.
-                </div>
-              </div>
-
             </div>
 
+            {/* Problem 3 */}
+            <div className="py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-3 flex items-center gap-3">
+                <span className="font-mono text-[#FF6A00] font-bold text-sm">03</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#FF6A00] bg-[#FF6A00]/10 px-2 py-0.5 rounded">Validation</span>
+              </div>
+              <div className="lg:col-span-5">
+                <h3 className="font-display font-semibold text-lg md:text-xl text-white mb-3">
+                  La validation d&apos;entrée &quot;Any&quot; déguisée
+                </h3>
+                <p className="text-sm text-[#8E8E8A] leading-relaxed">
+                  Même si TypeScript compile, les données qui transitent via les formulaires ou le réseau ne sont jamais formellement analysées par Zod au moment de l&apos;exécution, créant des plantages silencieux en production.
+                </p>
+              </div>
+              <div className="lg:col-span-4 flex flex-col justify-center lg:pl-8 h-full lg:pt-4">
+                <div className="font-mono text-[11px] text-red-400/90 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  <span>Risque : Plantages en production &amp; faux sentiment de sécurité.</span>
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -389,7 +383,7 @@ export default function Home() {
           <div className="flex items-center gap-6 text-xs font-mono text-[#8E8E8A]">
             <a 
               id="final-github"
-              href="https://github.com/hancode-studio/serverpatterns" 
+              href="https://github.com/handcode0-create/serverpatterns" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="hover:text-white flex items-center gap-1.5 transition"
@@ -417,6 +411,12 @@ export default function Home() {
       <footer className="bg-[#0B0B0B] border-t border-white/5 py-12 px-6 text-xs font-mono text-[#52524E]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
+            <img 
+              src="/brand/logo.png" 
+              alt="ServerPatterns Logo" 
+              className="h-5 w-5 object-contain select-none opacity-60 hover:opacity-100 transition-opacity"
+              referrerPolicy="no-referrer"
+            />
             <span className="text-white font-medium">ServerPatterns © 2026</span>
             <span>•</span>
             <span>Distribué sous licence MIT</span>

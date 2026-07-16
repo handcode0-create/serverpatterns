@@ -27,9 +27,12 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-[#0B0B0B]/80 backdrop-blur-md border-b border-white/5 px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="h-7 w-7 rounded-lg bg-[#FF6A00] flex items-center justify-center font-mono font-black text-black text-sm select-none transition-transform group-hover:scale-105">
-            SP
-          </div>
+          <img 
+            src="/brand/logo.png" 
+            alt="ServerPatterns Logo" 
+            className="h-7 w-7 object-contain select-none transition-transform group-hover:scale-105"
+            referrerPolicy="no-referrer"
+          />
           <span className="font-display font-semibold tracking-tight text-white text-lg transition-colors group-hover:text-[#FF6A00]">
             ServerPatterns
           </span>
@@ -68,7 +71,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <a 
             id="header-github-link"
-            href="https://github.com/hancode-studio/serverpatterns" 
+            href="https://github.com/handcode0-create/serverpatterns" 
             target="_blank" 
             rel="noopener noreferrer"
             className="flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#FF6A00]/30 text-white/90 px-3 py-1.5 rounded-lg text-xs font-mono transition"
