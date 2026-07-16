@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Shield } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Shield, ArrowRight } from 'lucide-react';
 import CodeBlock from '@/components/CodeBlock';
 import Callout from '@/components/Callout';
 
@@ -13,10 +13,10 @@ export default function PrimitiveGetPostHandlerPage() {
       {/* Title */}
       <div>
         <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-3">
-          createGetHandler &amp; createPostHandler
+          Route Handlers : create[Method]Handler
         </h1>
         <p className="text-base text-[#8E8E8A] leading-relaxed">
-          Assurez une validation instantanée et impénétrable de vos Route Handlers HTTP de Next.js App Router grâce à une intégration native de Zod.
+          Sécurisez, validez par Zod et encapsulez vos Route Handlers Next.js App Router dans un format d&apos;échange standardisé et infaillible.
         </p>
       </div>
 
@@ -28,45 +28,82 @@ export default function PrimitiveGetPostHandlerPage() {
           <div className="p-2 rounded-lg bg-[#FF6A00]/10 text-[#FF6A00]">
             <Shield size={18} />
           </div>
-          <h2 className="font-display text-xl font-semibold text-white">Validation Zod en amont</h2>
-        </div>
+          <h2 className="font-display text-xl font-semibold text-white">Validation Zod &amp; Réponses unifiées</h2>
+          </div>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Les wrappers <code className="font-mono text-[#FF6A00]">createGetHandler</code> et <code className="font-mono text-[#FF6A00]">createPostHandler</code> agissent comme des gardiens pour vos endpoints d&apos;API de Next.js. Zod intercepte, valide et normalise les schémas entrants (comme le corps JSON, les paramètres URL ou les cookies) avant de déléguer l&apos;exécution à votre contrôleur local.
+          Les wrappers <code className="font-mono text-[#FF6A00]">createGetHandler</code>, <code className="font-mono text-[#FF6A00]">createPostHandler</code>, <code className="font-mono text-[#FF6A00]">createPutHandler</code>, <code className="font-mono text-[#FF6A00]">createPatchHandler</code>, et <code className="font-mono text-[#FF6A00]">createDeleteHandler</code> agissent comme des garde-fous pour vos endpoints d&apos;API. Zod valide automatiquement les searchParams entrants (<code className="font-mono text-xs text-white">querySchema</code>) ou le corps de la requête (<code className="font-mono text-xs text-white">bodySchema</code>).
+        </p>
+        <p className="text-xs text-[#8E8E8A] leading-relaxed">
+          Le handler utilisateur reçoit directement l&apos;entrée validée ainsi que l&apos;objet <code className="font-mono text-xs text-white">NextRequest</code> natif, puis doit retourner un objet <code className="font-mono text-xs text-white">Result</code> (<code className="font-mono text-xs text-white">ok(...)</code> ou <code className="font-mono text-xs text-white">err(...)</code>). Le wrapper gère lui-même la construction de la <code className="font-mono text-xs text-white">NextResponse</code> finale.
         </p>
       </section>
 
-      {/* Code Example */}
-      <section className="space-y-4 pt-4" id="exemples">
-        <h2 className="font-display text-lg font-bold text-white">Exemple de Route Handler complet</h2>
+      {/* Code Example GET */}
+      <section className="space-y-4 pt-4" id="exemples-get">
+        <h2 className="font-display text-lg font-bold text-white">GET Handler (validation des Query Params)</h2>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Définissez un schéma et écrivez un contrôleur typé sans boilerplate d&apos;extraction ou de formattage d&apos;erreur manuel :
+          Pour les requêtes GET, utilisez <code className="font-mono text-xs text-white">querySchema</code> :
         </p>
         <CodeBlock 
-          code={`import { createPostHandler } from '@serverpatterns/next';
-import { z } from 'zod';
+          code={`import { createGetHandler } from "@serverpatterns/next";
+import { ok, err, parsePaginationParams, paginateInMemory } from "@serverpatterns/core";
+import { z } from "zod";
+
+const paginationQuerySchema = z.object({
+  page: z.string().optional(),
+  pageSize: z.string().optional(),
+});
+
+// GET /api/users?page=1&pageSize=10
+export const GET = createGetHandler({
+  querySchema: paginationQuerySchema,
+  handler: async (query, request) => {
+    // query est typé { page?: string, pageSize?: string }
+    const params = parsePaginationParams(query);
+    const users = [{ id: "1", name: "Alice" }, { id: "2", name: "Bob" }];
+    
+    return ok(paginateInMemory(users, params));
+  },
+});`}
+          title="src/app/api/users/route.ts"
+        />
+      </section>
+
+      {/* Code Example POST */}
+      <section className="space-y-4 pt-4" id="exemples-post">
+        <h2 className="font-display text-lg font-bold text-white">POST/PUT/PATCH/DELETE (validation du corps JSON)</h2>
+        <p className="text-xs text-[#8E8E8A] leading-relaxed">
+          Pour les méthodes modifiant des ressources, utilisez <code className="font-mono text-xs text-white">bodySchema</code> :
+        </p>
+        <CodeBlock 
+          code={`import { createPostHandler } from "@serverpatterns/next";
+import { ok, err, ServerPatternsError } from "@serverpatterns/core";
+import { z } from "zod";
+
+const createFeedbackSchema = z.object({
+  rating: z.number().min(1).max(5),
+  comment: z.string().max(500),
+});
 
 // POST /api/feedback
 export const POST = createPostHandler({
-  // validation stricte
-  schema: z.object({
-    rating: z.number().min(1).max(5),
-    comment: z.string().max(500)
-  }),
-  handler: async ({ body, headers }) => {
-    // body est automatiquement typé selon le schéma Zod !
-    const feedbackId = await db.feedbacks.save(body.rating, body.comment);
-    return {
-      status: 201,
-      body: { success: true, feedbackId }
-    };
-  }
+  bodySchema: createFeedbackSchema,
+  handler: async (body, request) => {
+    // body est typé { rating: number, comment: string } et garanti validé par Zod !
+    try {
+      const feedbackId = await db.feedbacks.save(body.rating, body.comment);
+      return ok({ success: true, feedbackId });
+    } catch (cause) {
+      return err(new ServerPatternsError("SERVER_ERROR", "Échec d'enregistrement", { cause }));
+    }
+  },
 });`}
           title="src/app/api/feedback/route.ts"
         />
       </section>
 
       <Callout title="Génération automatique d'erreur" type="info">
-        En cas de payload non conforme, le wrapper intercepte immédiatement l&apos;appel et renvoie une réponse standardisée <code className="font-mono text-xs text-white">HTTP 400 Bad Request</code> incluant le détail des erreurs retourné par Zod. Votre code applicatif ne s&apos;exécute jamais pour des requêtes corrompues.
+        En cas de payload non conforme ou d&apos;erreur retournée par le handler, le wrapper intercepte l&apos;appel et renvoie une réponse standardisée incluant le détail des erreurs. Votre code métier ne s&apos;exécute jamais pour des requêtes corrompues, éliminant totalement les risques de plantage silencieux.
       </Callout>
 
       <div className="h-[1px] bg-white/10 pt-4" />

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Terminal, Info, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Terminal, Info, CheckCircle2, ShieldAlert, Cpu } from 'lucide-react';
 import CodeBlock from '@/components/CodeBlock';
 import Callout from '@/components/Callout';
 import PackageManagerTabs from '@/components/PackageManagerTabs';
@@ -15,7 +15,7 @@ export default function CliAddActionPage() {
           serverpatterns add action
         </h1>
         <p className="text-base text-[#8E8E8A] leading-relaxed">
-          Génère une Server Action Next.js hautement sécurisée, protégée par validation Zod à l&apos;exécution et typée de bout en bout.
+          Génère une Server Action Next.js hautement sécurisée, validée par Zod et protégée par un contrôle d&apos;accès basé sur les rôles (RBAC) en une seule commande.
         </p>
       </div>
 
@@ -25,98 +25,169 @@ export default function CliAddActionPage() {
       <div className="space-y-4">
         <h2 className="font-display text-lg font-semibold text-white">Syntaxe de la commande</h2>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Spécifiez simplement le nom de votre Server Action cible :
+          Passez le nom de l&apos;action souhaitée en argument ou lancez simplement la commande pour utiliser l&apos;assistant interactif :
         </p>
         <PackageManagerTabs
-          pnpm="pnpm dlx serverpatterns add action <nom>"
-          npm="npx serverpatterns add action <nom>"
-          yarn="yarn dlx serverpatterns add action <nom>"
-          bun="bunx serverpatterns add action <nom>"
+          pnpm="pnpm dlx serverpatterns add action <nom-action>"
+          npm="npx serverpatterns add action <nom-action>"
+          yarn="yarn dlx serverpatterns add action <nom-action>"
+          bun="bunx serverpatterns add action <nom-action>"
         />
       </div>
 
-      {/* Terminal Example */}
+      {/* Interactive Prompts Step-by-Step */}
       <div className="space-y-4 pt-4">
-        <h2 className="font-display text-lg font-semibold text-white">Exemple d&apos;exécution complète</h2>
+        <h2 className="font-display text-lg font-semibold text-white">Assistant interactif de génération</h2>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Voici le retour attendu dans votre terminal lorsque vous créez une action <code className="font-mono text-xs text-white">register</code> :
+          Le CLI intègre un générateur de schéma Zod dynamique pour structurer rapidement vos payloads d&apos;entrée :
         </p>
 
-        <div className="bg-black/60 border border-white/5 rounded-xl p-6 font-mono text-xs text-[#8E8E8A] space-y-2">
-          <div className="text-white/60">
-            <span className="text-[#FF6A00]">$</span> npx serverpatterns add action register
+        <div className="bg-black/60 border border-white/5 rounded-xl p-6 font-mono text-xs space-y-4 text-[#8E8E8A]">
+          <div className="text-white">
+            <span className="text-[#FF6A00] font-bold">◆</span> <span className="font-bold">ServerPatterns — Add Action</span>
           </div>
-          <div className="text-[#8E8E8A]">
-            Analyse du fichier serverpatterns.json... <br />
-            Dossier cible détecté : <span className="text-white">src/app/actions</span>
+          
+          <div className="pl-4 border-l border-white/10 space-y-3">
+            <div>
+              <span className="text-green-400">?</span> <span className="text-white">Nom de l&apos;Action :</span>
+              <div className="text-[#FF6A00] pl-4 mt-1">❯ update-inventory</div>
+            </div>
+
+            <div className="space-y-2 border-l-2 border-[#FF6A00]/20 pl-3">
+              <div className="text-white/60">◇ Construction du schéma Zod (laisser vide pour terminer) :</div>
+              <div>
+                <span className="text-green-400">?</span> <span className="text-white">Nom du champ :</span> <span className="text-white font-bold">sku</span>
+              </div>
+              <div>
+                <span className="text-green-400">?</span> <span className="text-white">Type de sku :</span> <span className="text-[#FF6A00]">string</span>
+              </div>
+              <div>
+                <span className="text-green-400">?</span> <span className="text-white">Le champ sku est-il optionnel ?</span> <span className="text-white font-bold">Non</span>
+              </div>
+            </div>
+
+            <div className="space-y-2 border-l-2 border-[#FF6A00]/20 pl-3 pt-1">
+              <div>
+                <span className="text-green-400">?</span> <span className="text-white">Nom du champ :</span> <span className="text-white font-bold">quantity</span>
+              </div>
+              <div>
+                <span className="text-green-400">?</span> <span className="text-white">Type de quantity :</span> <span className="text-[#FF6A00]">number</span>
+              </div>
+              <div>
+                <span className="text-green-400">?</span> <span className="text-white">Le champ quantity est-il optionnel ?</span> <span className="text-white font-bold">Non</span>
+              </div>
+            </div>
+
+            <div className="space-y-1 border-l-2 border-[#FF6A00]/20 pl-3 pt-1">
+              <div>
+                <span className="text-green-400">?</span> <span className="text-white">Nom du champ :</span> <span className="text-white/40">&lt;laissé vide&gt;</span>
+              </div>
+              <div className="text-green-400 font-bold">✔ Schéma Zod configuré avec 2 champs !</div>
+            </div>
+
+            <div>
+              <span className="text-green-400">?</span> <span className="text-white">Cette action doit-elle être restreinte à certains rôles (RBAC) ?</span>
+              <div className="text-white pl-4 mt-1">❯ Oui</div>
+            </div>
+
+            <div>
+              <span className="text-green-400">?</span> <span className="text-white">Saisir les rôles autorisés (séparés par une virgule) :</span>
+              <div className="text-white pl-4 mt-1">❯ admin, stock_manager</div>
+            </div>
           </div>
+
           <div className="text-green-400">
-            ✔ Création du fichier : <span className="text-white">src/app/actions/register.ts</span> <br />
-            ✔ Ajout de la directive &quot;use server&quot; en en-tête <br />
-            ✔ Intégration du schéma de validation Zod par défaut <br />
-            🎉 Server Action prête à être importée côté client !
+            <span>✔</span> Fichier généré avec succès !
           </div>
         </div>
       </div>
 
-      {/* Generated Code details */}
+      {/* Generated File Structure */}
       <div className="space-y-6 pt-4">
-        <h2 className="font-display text-lg font-semibold text-white">Code généré &amp; Annotations</h2>
-        <p className="text-xs text-[#8E8E8A]">
-          Voici le fichier exact créé sous <code className="font-mono text-xs text-white">src/app/actions/register.ts</code>. Nous avons séparé ce qui est prêt à l&apos;emploi de ce que vous devez éditer vous-même :
+        <h2 className="font-display text-lg font-semibold text-white">Fichier unique généré</h2>
+        <p className="text-xs text-[#8E8E8A] leading-relaxed">
+          Le CLI crée une Server Action unifiée sous <code className="font-mono text-xs text-white">lib/actions/update-inventory.ts</code> :
         </p>
 
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs font-mono font-bold text-white">
-              <CheckCircle2 size={14} className="text-[#FF6A00]" />
-              <span>Ce qui est déjà configuré et prêt</span>
-            </div>
-            <ul className="text-xs text-[#8E8E8A] space-y-1 pl-5 list-disc leading-relaxed">
-              <li>La directive obligatoire <code className="font-mono text-xs text-white">&apos;use server&apos;</code> de Next.js.</li>
-              <li>Le wrapper sécurisé <code className="font-mono text-xs text-white">withServerAction()</code> de <code className="font-mono text-xs text-white">@serverpatterns/next</code>.</li>
-              <li>La validation et l&apos;interception automatique des erreurs Zod (retourne un objet Result).</li>
-            </ul>
-          </div>
+        <CodeBlock
+          code={`"use server";
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs font-mono font-bold text-white">
-              <Terminal size={14} className="text-[#FF6A00]" />
-              <span>Ce que vous devez éditer (les TODO)</span>
-            </div>
-            <ul className="text-xs text-[#8E8E8A] space-y-1 pl-5 list-disc leading-relaxed">
-              <li>Le schéma de validation <code className="font-mono text-xs text-white">schema</code> pour valider vos entrées de formulaires ou JSON payloads.</li>
-              <li>La logique interne de l&apos;action <code className="font-mono text-xs text-white">action</code> (connexion base de données, hashes de sécurité, etc.).</li>
-            </ul>
-          </div>
+import { z } from "zod";
+import { withAuth, ok, err } from "@serverpatterns/next";
+import { ServerPatternsError } from "@serverpatterns/core";
+import { getSession } from "@/lib/auth/session"; // TODO: À implémenter
 
-          <CodeBlock
-            code={`'use server';
-
-import { withServerAction } from '@serverpatterns/next';
-import { z } from 'zod';
-
-// 1. MODIFIE CE SCHÉMA : Déclare l'exact payload attendu par l'action
-const RegisterSchema = z.object({
-  email: z.string().email("E-mail invalide"),
-  password: z.string().min(6, "Le mot de passe doit faire au moins 6 caractères"),
+// Schéma d'entrée généré automatiquement par la boucle interactive
+const inputSchema = z.object({
+  sku: z.string(),
+  quantity: z.number(),
 });
 
-export const register = withServerAction({
-  schema: RegisterSchema,
-  action: async ({ body }) => {
-    // 2. LOGIQUE DU SERVEUR : Écris ton action serveur sécurisée ici
-    // Exemple : const user = await db.user.create({ ...body });
-    
-    return {
-      success: true,
-      userId: "usr_" + Math.random().toString(36).substring(7)
-    };
-  }
+export const updateInventory = withAuth({
+  getSession,
+  requiredRoles: ["admin", "stock_manager"],
+  inputSchema,
+  action: async (input, session) => {
+    try {
+      // TODO: Écrivez votre logique métier ici
+      // input.sku et input.quantity sont typés et garantis valides !
+      // session.userId et session.roles sont sécurisés et disponibles !
+      
+      return ok({
+        success: true,
+        sku: input.sku,
+        updatedQuantity: input.quantity,
+      });
+    } catch (cause) {
+      return err(
+        new ServerPatternsError(
+          "SERVER_ERROR", 
+          "Échec de la mise à jour de l'inventaire", 
+          { cause }
+        )
+      );
+    }
+  },
 });`}
-            title="src/app/actions/register.ts"
-          />
+          title="lib/actions/update-inventory.ts"
+        />
+
+        <Callout type="info" title="Note d'ingénierie : L'adaptateur de session">
+          L&apos;adaptateur de session <code className="font-mono text-xs text-white">getSession</code> n&apos;est pas fourni clé en main par ServerPatterns car il dépend de votre fournisseur d&apos;auth (NextAuth, Clerk, Kinde, JWT sur mesure). C&apos;est à vous d&apos;exposer une fonction respectant cette signature :
+        </Callout>
+
+        <CodeBlock
+          code={`// lib/auth/session.ts
+import { cookies } from "next/headers";
+
+export async function getSession() {
+  const token = (await cookies()).get("session_token")?.value;
+  if (!token) return null;
+  
+  // Exemple de décodage d'un token JWT
+  try {
+    const payload = decodeJwt(token);
+    return {
+      userId: payload.sub,
+      roles: payload.roles || [], // Tableau de rôles ex: ["admin", "stock_manager"]
+    };
+  } catch {
+    return null;
+  }
+}`}
+          title="lib/auth/session.ts"
+        />
+      </div>
+
+      {/* AI Agent Advice */}
+      <div className="bg-[#FF6A00]/5 border border-[#FF6A00]/10 rounded-2xl p-6 space-y-3">
+        <div className="flex items-center gap-2 text-white font-display font-semibold text-xs uppercase tracking-wider">
+          <Cpu size={16} className="text-[#FF6A00]" />
+          <span>Conseil IA d&apos;ingénierie</span>
         </div>
+        <p className="text-xs text-[#8E8E8A] leading-relaxed">
+          <strong>CONSEIL AGENT IA :</strong> Le wrapper <code className="font-mono text-xs text-white">withAuth</code> injecte automatiquement la session validée en second paramètre du handler. Ne refaites pas d&apos;appel à <code className="font-mono text-xs text-white">getSession()</code> ou de vérification manuelle de rôles à l&apos;intérieur du corps de l&apos;action. L&apos;exécution n&apos;atteint le code métier que si l&apos;utilisateur est authentifié et possède les rôles requis, réduisant considérablement la surface d&apos;erreur.
+        </p>
       </div>
 
       {/* Navigation Précédent / Suivant */}
@@ -137,7 +208,7 @@ export const register = withServerAction({
         </Link>
 
         <Link
-          href="/docs/cli/configuration"
+          href="/docs/primitives/result"
           className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-right transition-all flex items-center gap-3 select-none"
         >
           <div>
@@ -145,7 +216,7 @@ export const register = withServerAction({
               Suivant
             </span>
             <span className="block text-xs font-bold text-white">
-              Configuration
+              Result&lt;T, E&gt; : Monade
             </span>
           </div>
           <ChevronRight size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />

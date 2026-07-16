@@ -28,9 +28,9 @@ export default function InteractiveTerminal() {
     if (cmd === 'init') {
       setActiveGeneratedTab('/lib/api.ts');
     } else if (cmd === 'add-api') {
-      setActiveGeneratedTab('/app/api/user/route.ts');
+      setActiveGeneratedTab('/lib/api/user.ts');
     } else {
-      setActiveGeneratedTab('/app/actions/post.ts');
+      setActiveGeneratedTab('/app/actions/update-inventory.ts');
     }
   };
 
@@ -143,7 +143,7 @@ export default function InteractiveTerminal() {
           setTerminalLines(prev => [
             ...prev,
             ' ',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[1mServerPatterns (v0.1.0) — Add API Route\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[1mServerPatterns (v0.1.0) — Add API Client & Handler\x1b[0m',
             ' \x1b[38;2;255;106;0m│\x1b[0m'
           ]);
           delay = 700;
@@ -151,7 +151,7 @@ export default function InteractiveTerminal() {
         case 2:
           setTerminalLines(prev => [
             ...prev,
-            ' \x1b[38;2;255;106;0m◇\x1b[0m  Quel nom pour la ressource API ?',
+            ' \x1b[38;2;255;106;0m◇\x1b[0m  Nom de la ressource API :',
             ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0muser\x1b[0m',
             ' \x1b[38;2;255;106;0m│\x1b[0m'
           ]);
@@ -160,19 +160,20 @@ export default function InteractiveTerminal() {
         case 3:
           setTerminalLines(prev => [
             ...prev,
-            ' \x1b[38;2;255;106;0m◇\x1b[0m  Quelles méthodes HTTP implémenter ?',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m◼\x1b[0m GET \x1b[30;1m(Lecture de ressource)\x1b[0m',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m◼\x1b[0m POST \x1b[30;1m(Création/Mise à jour)\x1b[0m',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[30;1m◻ PUT (Remplacement)\x1b[0m',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[30;1m◻ DELETE (Suppression)\x1b[0m'
+            ' \x1b[38;2;255;106;0m◇\x1b[0m  Sélection multiple des méthodes à générer :',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m◼\x1b[0m Récupérer une ressource (GET /user/:id)',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m◼\x1b[0m Lister, paginée (GET /user)',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[30;1m◻ Créer (POST /user)\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m◼\x1b[0m Mettre à jour partiellement (PATCH /user/:id)',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[30;1m◻ Supprimer (DELETE /user/:id)\x1b[0m'
           ]);
           delay = 1400;
           break;
         case 4:
           setTerminalLines(prev => [
             ...prev.slice(0, 8),
-            ' \x1b[38;2;255;106;0m◇\x1b[0m  Quelles méthodes HTTP implémenter ?',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m \x1b[1mGET, POST\x1b[0m',
+            ' \x1b[38;2;255;106;0m◇\x1b[0m  Sélection multiple des méthodes à générer :',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m \x1b[1mRécupérer, Lister, Mettre à jour partiellement\x1b[0m',
             ' \x1b[38;2;255;106;0m│\x1b[0m'
           ]);
           delay = 600;
@@ -180,35 +181,40 @@ export default function InteractiveTerminal() {
         case 5:
           setTerminalLines(prev => [
             ...prev,
-            ' \x1b[38;2;255;106;0m◇\x1b[0m  Activer la validation Zod d\'entrées ?',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m●\x1b[0m Oui, générer les schémas d\'entrée & types associés',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[30;1m○ Non, typage standard\x1b[0m'
+            ' \x1b[38;2;255;106;0m◇\x1b[0m  Ce client a-t-il besoin d\'un token Bearer (JWT) ?',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m●\x1b[0m Oui',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[30;1m○ Non\x1b[0m'
           ]);
           delay = 1000;
           break;
         case 6:
           setTerminalLines(prev => [
             ...prev.slice(0, 12),
-            ' \x1b[38;2;255;106;0m◇\x1b[0m  Activer la validation Zod d\'entrées ?',
+            ' \x1b[38;2;255;106;0m◇\x1b[0m  Ce client a-t-il besoin d\'un token Bearer (JWT) ?',
             ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m \x1b[1mOui\x1b[0m',
-            ' \x1b[38;2;255;106;0m│\x1b[0m'
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m◇\x1b[0m  Source du token Bearer :',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m●\x1b[0m Cookie de session (cookies().get("token"))',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[30;1m○ Variable d\'environnement statique\x1b[0m'
           ]);
-          delay = 600;
+          delay = 1200;
           break;
         case 7:
           setTerminalLines(prev => [
-            ...prev,
-            ' \x1b[38;2;255;106;0m◼\x1b[0m  Génération du pattern API...',
+            ...prev.slice(0, 17),
+            ' \x1b[38;2;255;106;0m◇\x1b[0m  Source du token Bearer :',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m \x1b[1mCookie de session (&quot;token&quot;)\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m',
+            ' \x1b[38;2;255;106;0m◼\x1b[0m  Génération des fichiers de structure API...',
             ' \x1b[38;2;255;106;0m│\x1b[0m'
           ]);
           delay = 1200;
           break;
         case 8:
           setTerminalLines(prev => [
-            ...prev.slice(0, 16),
+            ...prev.slice(0, 21),
             ' \x1b[38;2;255;106;0m▲\x1b[0m  Fichiers générés :',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m Créé \x1b[36m/app/api/user/route.ts\x1b[0m \x1b[30;1m(Route Handler GET & POST unifié)\x1b[0m',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m Créé \x1b[36m/lib/schemas/user.ts\x1b[0m \x1b[30;1m(Zod Validation Schemas)\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m Créé \x1b[36m/lib/api/user.ts\x1b[0m \x1b[30;1m(Client API typé avec auth cookies)\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m Créé \x1b[36m/app/api/user/route.ts\x1b[0m \x1b[30;1m(Handlers GET &amp; PATCH avec validation)\x1b[0m',
             ' \x1b[38;2;255;106;0m│\x1b[0m'
           ]);
           delay = 800;
@@ -216,7 +222,7 @@ export default function InteractiveTerminal() {
         case 9:
           setTerminalLines(prev => [
             ...prev,
-            ' \x1b[38;2;255;106;0m└\x1b[0m  \x1b[32;1mGénération terminée !\x1b[0m Utilise \x1b[38;2;255;106;0mapi.get(\'/user\')\x1b[0m depuis le client Next.js.'
+            ' \x1b[38;2;255;106;0m└\x1b[0m  \x1b[32;1mGénération terminée !\x1b[0m Utilise \x1b[38;2;255;106;0mlistUsers()\x1b[0m ou \x1b[38;2;255;106;0mupdateUser()\x1b[0m dans tes composants.'
           ]);
           setIsRunning(false);
           break;
@@ -224,7 +230,7 @@ export default function InteractiveTerminal() {
     } else if (activeCommand === 'add-action') {
       switch (currentStep) {
         case 0:
-          setTerminalLines(['$ npx serverpatterns add action createPost']);
+          setTerminalLines(['$ npx serverpatterns add action update-inventory']);
           delay = 800;
           break;
         case 1:
@@ -239,8 +245,8 @@ export default function InteractiveTerminal() {
         case 2:
           setTerminalLines(prev => [
             ...prev,
-            ' \x1b[38;2;255;106;0m◇\x1b[0m  Quel nom pour l\'Action ?',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0mcreatePost\x1b[0m',
+            ' \x1b[38;2;255;106;0m◇\x1b[0m  Nom de l\'Action :',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0mupdate-inventory\x1b[0m',
             ' \x1b[38;2;255;106;0m│\x1b[0m'
           ]);
           delay = 800;
@@ -248,52 +254,60 @@ export default function InteractiveTerminal() {
         case 3:
           setTerminalLines(prev => [
             ...prev,
-            ' \x1b[38;2;255;106;0m◇\x1b[0m  Où sauvegarder l\'Action ?',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m●\x1b[0m /app/actions/post.ts \x1b[30;1m(Nouveau groupe)\x1b[0m',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[30;1m○ /app/actions.ts (Fichier unique global)\x1b[0m'
+            ' \x1b[38;2;255;106;0m◇\x1b[0m  Schéma Zod interactif (laisser vide pour finir) :',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  Nom du champ : \x1b[38;2;255;106;0msku\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  Type de sku : \x1b[38;2;255;106;0mstring\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  Le champ sku est-il optionnel ? \x1b[38;2;255;106;0mNon\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m'
           ]);
-          delay = 1000;
+          delay = 1200;
           break;
         case 4:
           setTerminalLines(prev => [
-            ...prev.slice(0, 8),
-            ' \x1b[38;2;255;106;0m◇\x1b[0m  Où sauvegarder l\'Action ?',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m \x1b[1m/app/actions/post.ts\x1b[0m',
+            ...prev,
+            ' \x1b[38;2;255;106;0m│\x1b[0m  Nom du champ : \x1b[38;2;255;106;0mquantity\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  Type de quantity : \x1b[38;2;255;106;0mnumber\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  Le champ quantity est-il optionnel ? \x1b[38;2;255;106;0mNon\x1b[0m',
             ' \x1b[38;2;255;106;0m│\x1b[0m'
           ]);
-          delay = 600;
+          delay = 1000;
           break;
         case 5:
           setTerminalLines(prev => [
             ...prev,
-            ' \x1b[38;2;255;106;0m◇\x1b[0m  Générer un schéma de validation d\'entrées avec Zod ?',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m●\x1b[0m Oui, configurer la validation d\'Action',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[30;1m○ Non, FormData natif sans types\x1b[0m'
+            ' \x1b[38;2;255;106;0m│\x1b[0m  Nom du champ (laisser vide pour terminer) : \x1b[38;2;255;106;0m\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m \x1b[1mSchéma Zod configuré avec 2 champs\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m'
           ]);
-          delay = 1000;
+          delay = 800;
           break;
         case 6:
           setTerminalLines(prev => [
-            ...prev.slice(0, 12),
-            ' \x1b[38;2;255;106;0m◇\x1b[0m  Générer un schéma de validation d\'entrées avec Zod ?',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m \x1b[1mOui, avec Zod\x1b[0m',
-            ' \x1b[38;2;255;106;0m│\x1b[0m'
+            ...prev,
+            ' \x1b[38;2;255;106;0m◇\x1b[0m  Cette action doit-elle être restreinte à certains rôles (RBAC) ?',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m●\x1b[0m Oui',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[30;1m○ Non\x1b[0m'
           ]);
-          delay = 600;
+          delay = 1000;
           break;
         case 7:
           setTerminalLines(prev => [
-            ...prev,
-            ' \x1b[38;2;255;106;0m◼\x1b[0m  Génération de la Server Action...',
+            ...prev.slice(0, 22),
+            ' \x1b[38;2;255;106;0m◇\x1b[0m  Cette action doit-elle être restreinte à certains rôles (RBAC) ?',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m \x1b[1mOui\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0m◇\x1b[0m  Saisir les rôles autorisés (séparés par une virgule) :',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[38;2;255;106;0madmin, stock_manager\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m',
+            ' \x1b[38;2;255;106;0m◼\x1b[0m  Création de la Server Action sécurisée...',
             ' \x1b[38;2;255;106;0m│\x1b[0m'
           ]);
           delay = 1200;
           break;
         case 8:
           setTerminalLines(prev => [
-            ...prev.slice(0, 16),
+            ...prev.slice(0, 29),
             ' \x1b[38;2;255;106;0m▲\x1b[0m  Fichiers générés :',
-            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m Créé \x1b[36m/app/actions/post.ts\x1b[0m \x1b[30;1m(Server Action unifiée avec validation)\x1b[0m',
+            ' \x1b[38;2;255;106;0m│\x1b[0m  \x1b[32m✔\x1b[0m Créé \x1b[36m/app/actions/update-inventory.ts\x1b[0m \x1b[30;1m(Action avec garde RBAC withAuth)\x1b[0m',
             ' \x1b[38;2;255;106;0m│\x1b[0m'
           ]);
           delay = 800;
@@ -301,7 +315,7 @@ export default function InteractiveTerminal() {
         case 9:
           setTerminalLines(prev => [
             ...prev,
-            ' \x1b[38;2;255;106;0m└\x1b[0m  \x1b[32;1mGénération terminée !\x1b[0m Importe \x1b[38;2;255;106;0m{ createPost }\x1b[0m dans tes composants Next.js Client.'
+            ' \x1b[38;2;255;106;0m└\x1b[0m  \x1b[32;1mGénération terminée !\x1b[0m Importe \x1b[38;2;255;106;0m{ updateInventory }\x1b[0m dans tes formulaires.'
           ]);
           setIsRunning(false);
           break;
@@ -386,72 +400,103 @@ export function err<E>(error: E): Result<any, E> {
   };
 }`
     },
-    '/app/api/user/route.ts': {
-      title: '/app/api/user/route.ts (Route Handler)',
-      code: `import { createGetHandler, createPostHandler } from '@serverpatterns/next';
-import { userSchema, createUserSchema } from '@/lib/schemas/user';
-import { db } from '@/lib/db';
+    '/lib/api/user.ts': {
+      title: '/lib/api/user.ts (Client API généré)',
+      code: `import { createApiClient, type PaginationParams, type PaginatedResult } from "@serverpatterns/core";
+import { cookies } from "next/headers";
 
-// Route Handler hautement standardisé, gérant la validation
-// d'entrée de manière transparente avec Zod
-export const GET = createGetHandler({
-  schema: userSchema,
-  handler: async ({ params }) => {
-    const user = await db.users.findUnique(params.id);
-    return user;
-  }
+export const userClient = createApiClient({
+  baseUrl: process.env.API_BASE_URL ?? "https://api.example.com",
+  defaultHeaders: async () => {
+    const token = (await cookies()).get("token")?.value;
+    const headers: Record<string, string> = {};
+    if (token) headers.Authorization = \`Bearer \${token}\`;
+    return headers;
+  },
 });
 
-export const POST = createPostHandler({
-  schema: createUserSchema,
-  handler: async ({ body }) => {
-    const newUser = await db.users.create(body);
-    return newUser;
-  }
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export async function getUser(id: string) {
+  return userClient.get<User>(\`/user/\${id}\`);
+}
+
+export async function listUsers(params: PaginationParams) {
+  return userClient.get<PaginatedResult<User>>("/user", {
+    query: { page: params.page, pageSize: params.pageSize },
+  });
+}
+
+export async function updateUser(id: string, input: Partial<User>) {
+  return userClient.patch<User>(\`/user/\${id}\`, input);
+}`
+    },
+    '/app/api/user/route.ts': {
+      title: '/app/api/user/route.ts (Route Handler généré)',
+      code: `import { z } from "zod";
+import { createGetHandler, createPatchHandler } from "@serverpatterns/next";
+import { ok, err, ServerPatternsError, parsePaginationParams, paginateInMemory } from "@serverpatterns/core";
+import { userClient, type User } from "@/lib/api/user";
+
+const paginationQuerySchema = z.object({
+  page: z.string().optional(),
+  pageSize: z.string().optional(),
+});
+
+export const GET = createGetHandler({
+  querySchema: paginationQuerySchema,
+  handler: async (query) => {
+    const params = parsePaginationParams(query);
+    // TODO: remplace par ta vraie source de données (ORM, base, API externe)
+    const allItems: User[] = [];
+    return ok(paginateInMemory(allItems, params));
+  },
+});
+
+const updateSchema = z.object({
+  name: z.string().optional(),
+  email: z.string().email().optional(),
+});
+
+export const PATCH = createPatchHandler({
+  bodySchema: updateSchema,
+  handler: async (body) => {
+    // TODO: implémente la mise à jour réelle
+    return ok(body as unknown as User);
+  },
 });`
     },
-    '/lib/schemas/user.ts': {
-      title: '/lib/schemas/user.ts (Validation Zod)',
-      code: `import { z } from 'zod';
+    '/app/actions/update-inventory.ts': {
+      title: '/app/actions/update-inventory.ts (Server Action générée)',
+      code: `"use server";
 
-// Schémas automatiques générés par le CLI
-export const userSchema = z.object({
-  id: z.string().uuid()
+import { z } from "zod";
+import { withAuth, ok, err } from "@serverpatterns/next";
+import { ServerPatternsError } from "@serverpatterns/core";
+import { getSession } from "@/lib/auth/session"; // TODO: adapte à ton système d'auth réel
+
+const inputSchema = z.object({
+  sku: z.string(),
+  quantity: z.number(),
 });
 
-export const createUserSchema = z.object({
-  email: z.string().email('Email invalide'),
-  name: z.string().min(2, 'Le nom doit faire au moins 2 caractères'),
-  role: z.enum(['admin', 'member']).default('member')
-});
-
-export type CreateUser = z.infer<typeof createUserSchema>;`
-    },
-    '/app/actions/post.ts': {
-      title: '/app/actions/post.ts (Server Action)',
-      code: `import { withServerAction } from '@serverpatterns/next';
-import { z } from 'zod';
-import { db } from '@/lib/db';
-
-const createPostSchema = z.object({
-  title: z.string().min(5, 'Le titre doit faire 5 caractères minimum'),
-  content: z.string().max(1000)
-});
-
-// Server Action encapsulée dans withServerAction :
-// Validation Zod de FormData intégrée, retour d'erreur typé automatique.
-export const createPost = withServerAction({
-  schema: createPostSchema,
-  action: async ({ body, context }) => {
-    // body est garanti typé et validé !
-    const post = await db.posts.create({
-      title: body.title,
-      content: body.content,
-      authorId: context.session.userId
-    });
-    
-    return post;
-  }
+export const updateInventory = withAuth({
+  getSession,
+  requiredRoles: ["admin", "stock_manager"],
+  inputSchema,
+  action: async (input, session) => {
+    try {
+      // TODO: implémente la logique métier de "update-inventory"
+      // session.userId et session.roles sont validés et disponibles !
+      return ok(input);
+    } catch (cause) {
+      return err(new ServerPatternsError("SERVER_ERROR", "Échec de l'action update-inventory", { cause }));
+    }
+  },
 });`
     }
   };
@@ -460,9 +505,9 @@ export const createPost = withServerAction({
     if (activeCommand === 'init') {
       return ['/lib/api.ts', '/lib/utils/result.ts'];
     } else if (activeCommand === 'add-api') {
-      return ['/app/api/user/route.ts', '/lib/schemas/user.ts'];
+      return ['/lib/api/user.ts', '/app/api/user/route.ts'];
     } else {
-      return ['/app/actions/post.ts'];
+      return ['/app/actions/update-inventory.ts'];
     }
   };
 
@@ -494,7 +539,7 @@ export const createPost = withServerAction({
                 : 'text-[#8E8E8A] hover:bg-white/5 hover:text-white'
             }`}
           >
-            add api user
+            add api
           </button>
           <button
             id="cmd-select-add-action"

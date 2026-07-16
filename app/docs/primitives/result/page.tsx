@@ -45,34 +45,80 @@ export default function PrimitiveResultPage() {
           Voici la signature de type de la primitive distribuée dans notre package de base :
         </p>
         <CodeBlock 
-          code={`export type Result<T, E = Error> =
-  | { ok: true; value: T; isOk(): true; isErr(): false }
-  | { ok: false; error: E; isOk(): false; isErr(): true };`}
+          code={`export type Result<T, E = ServerPatternsError> =
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+export function ok<T>(data: T): Result<T, never>;
+export function err<E>(error: E): Result<never, E>;
+
+export function isOk<T, E>(result: Result<T, E>): result is { success: true; data: T };
+export function isErr<T, E>(result: Result<T, E>): result is { success: false; error: E };
+
+export function mapResult<T, U, E>(
+  result: Result<T, E>,
+  transform: (data: T) => U
+): Result<U, E>;
+
+export function unwrap<T, E>(result: Result<T, E>): T;`}
+          title="@serverpatterns/core"
+        />
+      </section>
+
+      <section className="space-y-4 pt-4" id="server-patterns-error">
+        <h2 className="font-display text-lg font-bold text-white">Gestion d&apos;erreur standardisée</h2>
+        <p className="text-xs text-[#8E8E8A] leading-relaxed">
+          Le framework fournit une classe d&apos;erreur unifiée <code className="font-mono text-xs text-white">ServerPatternsError</code> contenant des codes standardisés pour typifier vos échecs :
+        </p>
+        <CodeBlock 
+          code={`export type ServerPatternsErrorCode =
+  | "VALIDATION_ERROR"
+  | "NETWORK_ERROR"
+  | "NOT_FOUND"
+  | "UNAUTHORIZED"
+  | "SERVER_ERROR"
+  | "UNKNOWN_ERROR";
+
+export class ServerPatternsError extends Error {
+  public readonly code: ServerPatternsErrorCode;
+  public readonly cause?: unknown;
+  public readonly status: number | undefined;
+
+  constructor(
+    code: ServerPatternsErrorCode,
+    message: string,
+    options?: { cause?: unknown; status?: number }
+  );
+}`}
           title="@serverpatterns/core"
         />
       </section>
 
       <Callout title="Règle de Typage" type="recommendation">
-        Pour garder des signatures de type hautement expressives, évitez de surcharger le type d&apos;erreur générique. Préférez déclarer vos propres classes d&apos;erreurs héritées ou des types d&apos;erreurs énumérés pour vos cas complexes.
+        Pour garder des signatures de type hautement expressives, utilisez la classe <code className="font-mono text-xs text-white">ServerPatternsError</code>. Elle vous permet d&apos;embarquer le code d&apos;erreur, la cause sous-jacente (par exemple l&apos;exception d&apos;origine d&apos;un ORM) et un code de statut HTTP.
       </Callout>
 
       {/* Code Example */}
       <section className="space-y-4 pt-4" id="exemples">
         <h2 className="font-display text-lg font-bold text-white">Exemple d&apos;utilisation dans vos services</h2>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Déclarez de vrais services et contrôlez chaque échec attendu (ressource introuvable, dépassement de quota...) de façon explicite :
+          Déclarez de vrais services et contrôlez chaque échec attendu de façon explicite :
         </p>
         <CodeBlock 
-          code={`import { Result, ok, err } from '@serverpatterns/core';
+          code={`import { Result, ok, err, ServerPatternsError } from '@serverpatterns/core';
 
 interface Product { id: string; price: number; }
 
-export async function fetchProduct(id: string): Promise<Result<Product, Error>> {
-  const product = await db.products.findById(id);
-  if (!product) {
-    return err(new Error("Produit introuvable"));
+export async function fetchProduct(id: string): Promise<Result<Product, ServerPatternsError>> {
+  try {
+    const product = await db.products.findById(id);
+    if (!product) {
+      return err(new ServerPatternsError("NOT_FOUND", "Produit introuvable", { status: 404 }));
+    }
+    return ok(product);
+  } catch (cause) {
+    return err(new ServerPatternsError("SERVER_ERROR", "Erreur lors de la récupération", { cause }));
   }
-  return ok(product);
 }`}
           title="src/lib/services/products.ts"
         />

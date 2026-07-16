@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Lock, Key } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import CodeBlock from '@/components/CodeBlock';
 import Callout from '@/components/Callout';
 
@@ -13,10 +13,10 @@ export default function PrimitiveAuthPage() {
       {/* Title */}
       <div>
         <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-3">
-          withAuth &amp; createAuthWrapper()
+          withAuth()
         </h1>
         <p className="text-base text-[#8E8E8A] leading-relaxed">
-          Sécurisez vos Server Actions et fonctions serveurs de bout en bout grâce à un middleware d&apos;authentification et d&apos;autorisation hautement typé et unifié.
+          Sécurisez vos Server Actions de bout en bout grâce à un middleware d&apos;authentification et d&apos;autorisation simple, typé et unifié.
         </p>
       </div>
 
@@ -31,76 +31,52 @@ export default function PrimitiveAuthPage() {
           <h2 className="font-display text-xl font-semibold text-white">Sécurité serveur par défaut</h2>
         </div>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          La gestion de l&apos;authentification et des permissions (RBAC, ABAC) dans les Server Actions de Next.js peut vite s&apos;avérer répétitive ou sujette à des failles si elle est oubliée. <code className="font-mono text-[#FF6A00]">withAuth</code> vous permet d&apos;intercepter tous les appels serveur en amont, de vérifier la session, d&apos;appliquer des gardes sur les rôles, d&apos;exécuter des vérifications fines d&apos;accès aux ressources, et de retourner un objet <code className="font-mono text-white text-xs">Result</code> sécurisé.
+          La sécurisation des Server Actions dans Next.js requiert de valider la session de l&apos;utilisateur avant d&apos;exécuter toute logique métier. La primitive <code className="font-mono text-[#FF6A00]">withAuth</code> permet d&apos;encapsuler cette logique de façon systématique.
+        </p>
+        <p className="text-xs text-[#8E8E8A] leading-relaxed">
+          Elle s&apos;appuie sur une fonction d&apos;obtention de session fournie par le développeur (comme un appel à votre outil d&apos;auth préféré : Auth.js, Clerk, Kinde, Supabase), valide l&apos;input via un schéma Zod (<code className="font-mono text-xs text-white">inputSchema</code>), et injecte la session validée directement dans votre fonction métier.
         </p>
       </section>
 
       {/* Configuration Options */}
-      <section className="space-y-4" id="configuration-globale">
-        <h2 className="font-display text-lg font-bold text-white">1. Configuration Globale du Wrapper</h2>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Utilisez <code className="font-mono text-white">createAuthWrapper(config)</code> pour instancier un wrapper `withAuth` configuré spécifiquement pour votre fournisseur d&apos;authentification (Auth.js, Clerk, Supabase, Kinde, etc.) :
-        </p>
-        <div className="border border-white/5 bg-white/[0.01] rounded-xl p-4 overflow-x-auto">
-          <table className="min-w-full font-mono text-[11px] text-[#8E8E8A]">
-            <thead>
-              <tr className="border-b border-white/10 text-white">
-                <th className="py-2 text-left">Option de Configuration</th>
-                <th className="py-2 text-left">Type</th>
-                <th className="py-2 text-left">Description</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              <tr>
-                <td className="py-2 pr-4 text-white font-semibold">getSessionUser</td>
-                <td className="py-2 pr-4 text-[#FF6A00]">() =&gt; Promise&lt;TUser | null&gt;</td>
-                <td className="py-2">Fonction retournant la session ou l&apos;utilisateur connecté depuis votre auth provider.</td>
-              </tr>
-              <tr>
-                <td className="py-2 pr-4 text-white font-semibold">defaultUnauthorizedMessage</td>
-                <td className="py-2 pr-4 text-[#FF6A00]">string</td>
-                <td className="py-2">Message d&apos;erreur d&apos;authentification par défaut (HTTP 401).</td>
-              </tr>
-              <tr>
-                <td className="py-2 pr-4 text-white font-semibold">defaultForbiddenMessage</td>
-                <td className="py-2 pr-4 text-[#FF6A00]">string</td>
-                <td className="py-2">Message d&apos;erreur d&apos;autorisation ou de rôle insuffisant par défaut (HTTP 403).</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <section className="space-y-4" id="signature">
+        <h2 className="font-display text-lg font-bold text-white">Signature TypeScript Core</h2>
+        <CodeBlock 
+          code={`export interface WithAuthOptions<TInput, TSession, TResult> {
+  inputSchema: z.ZodType<TInput>;
+  getSession: () => Promise<TSession | null>;
+  action: (input: TInput, session: TSession) => Promise<Result<TResult, ServerPatternsError>>;
+}
+
+export function withAuth<TInput, TSession, TResult>(
+  options: WithAuthOptions<TInput, TSession, TResult>
+): (input: TInput) => Promise<Result<TResult, ServerPatternsError>>;`}
+          title="@serverpatterns/next"
+        />
       </section>
 
       {/* Code Example: Setup */}
       <section className="space-y-4 pt-4" id="initialisation">
-        <h2 className="font-display text-lg font-bold text-white">Création du Wrapper d&apos;Authentification</h2>
+        <h2 className="font-display text-lg font-bold text-white">1. Définir le résolveur de Session</h2>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Créez un fichier utilitaire d&apos;auth pour exporter votre instance configurée de <code className="font-mono text-[#FF6A00]">withAuth</code> :
+          En convention d&apos;architecture, implémentez la méthode d&apos;extraction de session dans <code className="font-mono text-xs text-white">lib/auth/session.ts</code> :
         </p>
         <CodeBlock 
-          code={`// src/lib/auth.ts
-import { createAuthWrapper } from '@/lib/serverpatterns/auth';
-import { getServerSession } from 'next-auth'; // ou Clerk, Supabase, Kinde
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+          code={`import { getServerSession } from "next-auth"; // ou Clerk, Supabase...
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export interface AppUser {
+export interface SessionUser {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'editor' | 'user';
 }
 
-export const withAuth = createAuthWrapper<AppUser>({
-  // Résolution globale de la session
-  getSessionUser: async () => {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return null;
-    return session.user as AppUser;
-  },
-  defaultUnauthorizedMessage: 'Veuillez vous connecter pour effectuer cette action.',
-  defaultForbiddenMessage: 'Accès interdit. Vous ne disposez pas des permissions requises.'
-});`}
-          title="src/lib/auth.ts"
+export async function getSession(): Promise<SessionUser | null> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return null;
+  return session.user as SessionUser;
+}`}
+          title="lib/auth/session.ts"
         />
       </section>
 
@@ -108,41 +84,49 @@ export const withAuth = createAuthWrapper<AppUser>({
       <section className="space-y-4 pt-4" id="usage-actions">
         <h2 className="font-display text-lg font-bold text-white">2. Sécurisation des Actions Serveur</h2>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Une fois instancié, vous pouvez appliquer des gardes de rôles ou d&apos;autorisation contextuelle complexes en encapsulant vos Server Actions :
+          Sécurisez vos opérations serveurs dans <code className="font-mono text-xs text-white">lib/actions/</code> :
         </p>
         <CodeBlock 
-          code={`// src/app/actions/articles.ts
-'use server';
+          code={`"use server";
 
-import { withAuth } from '@/lib/auth';
-import { z } from 'zod';
+import { withAuth } from "@serverpatterns/next";
+import { ok, err, ServerPatternsError } from "@serverpatterns/core";
+import { getSession } from "@/lib/auth/session";
+import { z } from "zod";
 
-// Optionnel: Vous pouvez chaîner avec withServerAction pour valider d'abord le schéma Zod
-export const deleteArticle = withAuth(
-  {
-    // 1. Gardien de rôle (RBAC) - l'utilisateur doit être admin ou editor
-    roles: ['admin', 'editor'],
+const deleteArticleSchema = z.object({
+  articleId: z.string(),
+});
 
-    // 2. Autorisation fine (ABAC) - l'utilisateur ne peut supprimer que ses propres articles (sauf s'il est admin)
-    authorize: async (user, input: { articleId: string }) => {
-      if (user.role === 'admin') return true;
-      const article = await db.articles.getById(input.articleId);
-      return article?.authorId === user.id;
+export const deleteArticle = withAuth({
+  inputSchema: deleteArticleSchema,
+  getSession,
+  action: async (input, session) => {
+    // input est typé et garanti valide
+    // session contient les détails de l'utilisateur authentifié
+    try {
+      const article = await db.articles.findById(input.articleId);
+      if (!article) {
+        return err(new ServerPatternsError("NOT_FOUND", "Article introuvable"));
+      }
+      
+      if (article.authorId !== session.id) {
+        return err(new ServerPatternsError("UNAUTHORIZED", "Vous n'êtes pas l'auteur de cet article"));
+      }
+
+      await db.articles.delete(input.articleId);
+      return ok({ success: true });
+    } catch (cause) {
+      return err(new ServerPatternsError("SERVER_ERROR", "Une erreur interne est survenue", { cause }));
     }
-  },
-  async ({ input, user }) => {
-    // Les types d'input et de user sont entièrement déduits !
-    await db.articles.delete(input.articleId);
-    
-    return { success: true, deletedBy: user.name };
   }
-);`}
-          title="src/app/actions/articles.ts"
+});`}
+          title="lib/actions/articles.ts"
         />
       </section>
 
       <Callout title="Monade Result unifiée" type="info">
-        Tout comme les autres primitives de ServerPatterns, les actions enveloppées dans <code className="font-mono text-xs text-white">withAuth</code> renvoient un objet <code className="font-mono text-xs text-white">Result&lt;T, E&gt;</code> typé. Si l&apos;utilisateur n&apos;est pas connecté ou que son rôle est insuffisant, l&apos;action renvoie immédiatement un échec typé sans lever d&apos;exceptions non gérées côté client, simplifiant considérablement votre logique d&apos;affichage UI.
+        Tout comme les autres primitives, les actions enveloppées dans <code className="font-mono text-xs text-white">withAuth</code> renvoient un objet <code className="font-mono text-xs text-white">Result&lt;T, E&gt;</code> typé. Si l&apos;utilisateur n&apos;est pas connecté, l&apos;action renvoie immédiatement un échec d&apos;authentification standardisé sans lever d&apos;exceptions non gérées côté client, simplifiant considérablement votre logique d&apos;affichage UI.
       </Callout>
 
       <div className="h-[1px] bg-white/10 pt-4" />
@@ -159,7 +143,7 @@ export const deleteArticle = withAuth(
               Précédent
             </span>
             <span className="block text-xs font-bold text-white">
-              createWebhookHandler()
+              Signature Webhook HMAC
             </span>
           </div>
         </Link>

@@ -16,7 +16,7 @@ export default function PrimitiveServerActionPage() {
           withServerAction()
         </h1>
         <p className="text-base text-[#8E8E8A] leading-relaxed">
-          Sécurisez vos Server Actions Next.js côté serveur contre les injections en validant les payloads à l&apos;exécution avec Zod.
+          Sécurisez vos Server Actions Next.js contre les injections et simplifiez la gestion du cycle de vie des erreurs côté client avec Zod.
         </p>
       </div>
 
@@ -31,45 +31,56 @@ export default function PrimitiveServerActionPage() {
           <h2 className="font-display text-xl font-semibold text-white">Sécurisez vos Server Actions</h2>
         </div>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Les Server Actions Next.js facilitent l&apos;écriture de contrôleurs directement appelables depuis vos formulaires client. Cependant, puisqu&apos;il s&apos;agit de simples requêtes POST HTTP déguisées, elles doivent faire l&apos;objet d&apos;un audit strict côté serveur.
+          Les Server Actions de Next.js facilitent grandement le déclenchement de logique serveur directement depuis le code client. Toutefois, sous le capot, elles restent de simples endpoints HTTP POST déguisés, exposés à l&apos;exécution. Il est donc impératif d&apos;effectuer des contrôles stricts de structure et d&apos;autorisation.
         </p>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          <code className="font-mono text-[#FF6A00]">withServerAction</code> intercepte le payload (qu&apos;il s&apos;agisse de JSON classique ou de FormData natif de formulaires), exécute la validation Zod côté serveur et renvoie systématiquement un objet Result unifié pour une intégration client sans friction.
+          Le wrapper <code className="font-mono text-[#FF6A00]">withServerAction</code> intercepte les paramètres de votre action, effectue une validation de schéma stricte via Zod (<code className="font-mono text-xs text-white">inputSchema</code>), et normalise le retour sous forme de <code className="font-mono text-xs text-white">Result&lt;T, ServerPatternsError&gt;</code> pour le client.
         </p>
       </section>
 
       {/* Code Example */}
       <section className="space-y-4 pt-4" id="exemples">
-        <h2 className="font-display text-lg font-bold text-white">Exemple de Server Action de base de données</h2>
+        <h2 className="font-display text-lg font-bold text-white">Exemple d&apos;action de base de données</h2>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Déclarez une action sécurisée en base de données et utilisez-la directement dans vos interfaces de formulaires :
+          Déclarez une action sécurisée sous le dossier recommandé <code className="font-mono text-xs text-white">lib/actions/</code> :
         </p>
         <CodeBlock 
-          code={`'use server';
+          code={`"use server";
 
-import { withServerAction } from '@serverpatterns/next';
-import { z } from 'zod';
+import { withServerAction } from "@serverpatterns/next";
+import { ok, err, ServerPatternsError } from "@serverpatterns/core";
+import { z } from "zod";
+
+const updateUsernameSchema = z.object({
+  userId: z.string(),
+  newUsername: z.string().min(3).max(20),
+});
 
 export const updateUsername = withServerAction({
-  schema: z.object({
-    userId: z.string(),
-    newUsername: z.string().min(3).max(20)
-  }),
-  action: async ({ body }) => {
-    // body est garanti valide et typé !
-    const ok = await db.users.updateName(body.userId, body.newUsername);
-    if (!ok) {
-      throw new Error("Impossible de renommer l'utilisateur");
+  inputSchema: updateUsernameSchema,
+  action: async (input) => {
+    // input est automatiquement validé et typé !
+    try {
+      const success = await db.users.updateName(input.userId, input.newUsername);
+      if (!success) {
+        return err(
+          new ServerPatternsError("NOT_FOUND", "Impossible de mettre à jour le profil")
+        );
+      }
+      return ok({ updated: true, newUsername: input.newUsername });
+    } catch (cause) {
+      return err(
+        new ServerPatternsError("SERVER_ERROR", "Une erreur interne est survenue", { cause })
+      );
     }
-    return { updated: true };
-  }
+  },
 });`}
-          title="src/app/actions/user.ts"
+          title="lib/actions/user.ts"
         />
       </section>
 
-      <Callout title="Zod &amp; FormData" type="recommendation">
-        Le wrapper <code className="font-mono text-xs text-white">withServerAction</code> prend en charge l&apos;extraction des valeurs depuis les formulaires natifs (<code className="font-mono text-xs text-white">FormData</code>) de façon transparente, vous évitant d&apos;appeler manuellement <code className="font-mono text-xs text-white">formData.get()</code> pour chaque champ.
+      <Callout title="Chemin de fichier standardisé" type="recommendation">
+        Pour une lisibilité accrue par les agents IA et une séparation nette des responsabilités, placez systématiquement vos Server Actions dans <code className="font-mono text-xs text-white">lib/actions/</code> plutôt que dans le dossier d&apos;UI <code className="font-mono text-xs text-white">app/</code>.
       </Callout>
 
       <div className="h-[1px] bg-white/10 pt-4" />
@@ -86,7 +97,7 @@ export const updateUsername = withServerAction({
               Précédent
             </span>
             <span className="block text-xs font-bold text-white">
-              createGetHandler / createPostHandler
+              create[Method]Handler
             </span>
           </div>
         </Link>
@@ -100,7 +111,7 @@ export const updateUsername = withServerAction({
               Suivant
             </span>
             <span className="block text-xs font-bold text-white">
-              createWebhookHandler()
+              Signature Webhook HMAC
             </span>
           </div>
           <ChevronRight size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />

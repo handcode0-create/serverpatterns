@@ -42,11 +42,11 @@ export default function PrimitiveApiClientPage() {
           Créez une seule instance d&apos;API client et utilisez-la indifféremment sur l&apos;ensemble de vos pages client :
         </p>
         <CodeBlock 
-          code={`import { createApiClient } from '@serverpatterns/core';
+          code={`import { createApiClient, isErr, isOk } from '@serverpatterns/core';
 
 export const api = createApiClient({
   baseUrl: '/api',
-  headers: async () => {
+  defaultHeaders: async () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     return token ? { Authorization: \`Bearer \${token}\` } : {};
   }
@@ -57,13 +57,13 @@ interface User { id: string; name: string; }
 
 async function loadProfile() {
   const res = await api.get<User>('/user/profile');
-  if (res.isErr()) {
+  if (isErr(res)) {
     console.error("Erreur profile:", res.error.message);
     return;
   }
   
-  // res.value est maintenant garanti de type User !
-  console.log("Bienvenue", res.value.name);
+  // res.data est maintenant garanti de type User !
+  console.log("Bienvenue", res.data.name);
 }`}
           title="src/lib/api.ts"
         />

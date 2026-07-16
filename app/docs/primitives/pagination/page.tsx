@@ -13,10 +13,10 @@ export default function PrimitivePaginationPage() {
       {/* Title */}
       <div>
         <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-3">
-          withPagination()
+          Pagination : Helpers Utilitaires
         </h1>
         <p className="text-base text-[#8E8E8A] leading-relaxed">
-          Standardisez, sécurisez et simplifiez les requêtes paginées à travers vos Route Handlers et Server Actions de façon fluide et robuste.
+          Traitez, filtrez et paginez vos collections de données de façon unifiée grâce à des utilitaires de formatage simples et efficaces.
         </p>
       </div>
 
@@ -28,110 +28,80 @@ export default function PrimitivePaginationPage() {
           <div className="p-2 rounded-lg bg-[#FF6A00]/10 text-[#FF6A00]">
             <ListOrdered size={18} />
           </div>
-          <h2 className="font-display text-xl font-semibold text-white">Pagination Unifiée</h2>
+          <h2 className="font-display text-xl font-semibold text-white">Trois fonctions simples</h2>
         </div>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Qu&apos;il s&apos;agisse de pagination par numéros de page (Offset) ou par jeton (Cursor-based), le wrapper <code className="font-mono text-[#FF6A00]">withPagination</code> standardise les paramètres entrants, impose des limites saines (maxLimit) pour éviter le déni de service, et enveloppe automatiquement les résultats dans la monade standard <code className="font-mono text-white">Result&lt;Paginated&lt;T&gt;, Error&gt;</code>.
+          Plutôt que d&apos;imposer un wrapper complexe, ServerPatterns fournit trois fonctions unitaires dans <code className="font-mono text-xs text-white">@serverpatterns/core</code> pour extraire les paramètres de pagination, paginer en mémoire si besoin, et sérialiser les réponses paginées au bon format.
         </p>
       </section>
 
-      {/* Configuration Options */}
-      <section className="space-y-4" id="configuration">
-        <h2 className="font-display text-lg font-bold text-white">Options de Configuration</h2>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Vous pouvez affiner le comportement par défaut de la pagination en passant des options :
-        </p>
-        <div className="border border-white/5 bg-white/[0.01] rounded-xl p-4 overflow-x-auto">
-          <table className="min-w-full font-mono text-[11px] text-[#8E8E8A]">
-            <thead>
-              <tr className="border-b border-white/10 text-white">
-                <th className="py-2 text-left">Option</th>
-                <th className="py-2 text-left">Type</th>
-                <th className="py-2 text-left">Description</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              <tr>
-                <td className="py-2 pr-4 text-white font-semibold">defaultLimit</td>
-                <td className="py-2 pr-4 text-[#FF6A00]">number</td>
-                <td className="py-2">Nombre d&apos;éléments par défaut par page s&apos;il n&apos;est pas fourni (Défaut : <code className="text-white">10</code>).</td>
-              </tr>
-              <tr>
-                <td className="py-2 pr-4 text-white font-semibold">maxLimit</td>
-                <td className="py-2 pr-4 text-[#FF6A00]">number</td>
-                <td className="py-2">Limite maximale autorisée pour prévenir les requêtes d&apos;extraction massive (Défaut : <code className="text-white">100</code>).</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      {/* Signatures */}
+      <section className="space-y-4 pt-4" id="signatures">
+        <h2 className="font-display text-lg font-bold text-white">Signatures des Helpers</h2>
+        <CodeBlock 
+          code={`export interface PaginationParams {
+  page: number;
+  pageSize: number;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  meta: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// Analyse et normalise les query params de pagination (page, pageSize)
+export function parsePaginationParams(queryValue: unknown): PaginationParams;
+
+// Pagine une liste d'éléments en mémoire locale
+export function paginateInMemory<T>(items: T[], params: PaginationParams): PaginatedResult<T>;
+
+// Construit une NextResponse standardisée pour l'API
+export function createPaginatedResponse<T>(result: PaginatedResult<T>): NextResponse;`}
+          title="@serverpatterns/core"
+        />
       </section>
 
       {/* Code Example */}
       <section className="space-y-4 pt-4" id="exemples">
-        <h2 className="font-display text-lg font-bold text-white">Exemple d&apos;Usage complet avec Prisma / Drizzle</h2>
+        <h2 className="font-display text-lg font-bold text-white">Exemple d&apos;utilisation complet</h2>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Voici comment déclarer une fonction de requêtage paginée côté serveur à l&apos;aide de <code className="font-mono text-[#FF6A00]">withPagination</code> :
+          Voici comment utiliser ces helpers au sein d&apos;un Route Handler Next.js :
         </p>
         <CodeBlock 
-          code={`import { withPagination, getPaginationFromRequest } from '@/lib/serverpatterns/pagination';
-import { db } from '@/lib/db';
+          code={`import { createGetHandler } from "@serverpatterns/next";
+import { parsePaginationParams, paginateInMemory, ok } from "@serverpatterns/core";
+import { z } from "zod";
 
-// 1. Déclarer la fonction paginée
-export const getPaginatedProducts = withPagination(
-  async ({ params, input }: { params: any; input: { category?: string } }) => {
-    const { limit, offset } = params;
+const usersQuerySchema = z.object({
+  page: z.string().optional(),
+  pageSize: z.string().optional(),
+});
 
-    // Requête vers votre BDD
-    const [items, total] = await Promise.all([
-      db.product.findMany({
-        where: { category: input.category },
-        take: limit,
-        skip: offset,
-        orderBy: { createdAt: 'desc' }
-      }),
-      db.product.count({
-        where: { category: input.category }
-      })
-    ]);
-
-    return { items, total };
-  },
-  { defaultLimit: 12, maxLimit: 48 }
-);
-
-// 2. Exemple d'utilisation dans un Route Handler Next.js
-export async function GET(req: Request) {
-  // Extraction des paramètres HTTP standard (?page=2&limit=12)
-  const paginationParams = getPaginationFromRequest(req);
-  
-  const result = await getPaginatedProducts(paginationParams, { category: 'electronics' });
-
-  if (result.ok) {
-    return Response.json(result.value);
-  } else {
-    return Response.json({ error: result.error.message }, { status: 500 });
+// GET /api/users?page=1&pageSize=10
+export const GET = createGetHandler({
+  querySchema: usersQuerySchema,
+  handler: async (query) => {
+    // 1. Extraire et normaliser les paramètres (valeurs par défaut appliquées)
+    const params = parsePaginationParams(query);
+    
+    // 2. Récupérer les données brutes
+    const allUsers = await db.users.findMany();
+    
+    // 3. Pagnier en mémoire
+    const paginated = paginateInMemory(allUsers, params);
+    
+    // 4. Retourner le résultat encapsulé
+    return ok(paginated);
   }
-}`}
-          title="src/app/api/products/route.ts"
+});`}
+          title="src/app/api/users/route.ts"
         />
       </section>
-
-      <Callout title="Payload de retour standardisé" type="info">
-        La monade renvoyée contient un objet de données avec la structure suivante :
-        <pre className="mt-2 text-[11px] font-mono text-white leading-relaxed">
-{`{
-  items: T[],
-  pagination: {
-    page: number,
-    limit: number,
-    offset: number,
-    total: number,
-    totalPages: number,
-    hasMore: boolean
-  }
-}`}
-        </pre>
-      </Callout>
 
       <div className="h-[1px] bg-white/10 pt-4" />
 
@@ -153,7 +123,7 @@ export async function GET(req: Request) {
         </Link>
 
         <Link
-          href="/docs/primitives/idempotency"
+          href="/docs/primitives/rate-limiter"
           className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-right transition-all flex items-center gap-3 select-none"
         >
           <div>
@@ -161,7 +131,7 @@ export async function GET(req: Request) {
               Suivant
             </span>
             <span className="block text-xs font-bold text-white">
-              withIdempotency()
+              createRateLimiter()
             </span>
           </div>
           <ChevronRight size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />

@@ -114,19 +114,23 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             </ul>
           </div>
 
-          {/* Group 2: Référence CLI */}
+          {/* Group 2: Primitives */}
           <div>
             <h4 className="text-[#8E8E8A] font-bold uppercase tracking-wider text-[10px] mb-4 flex items-center gap-1.5 px-3">
-              <Terminal size={12} className="text-[#FF6A00]" />
-              <span>Référence CLI</span>
+              <Code size={12} className="text-[#FF6A00]" />
+              <span>Primitives</span>
             </h4>
             <ul className="space-y-1">
               {[
-                { name: 'serverpatterns init', path: '/docs/cli/init' },
-                { name: 'serverpatterns add api', path: '/docs/cli/add-api' },
-                { name: 'serverpatterns add action', path: '/docs/cli/add-action' },
-                { name: 'Configuration', path: '/docs/cli/configuration' },
-                { name: 'Changelog CLI', path: '/docs/cli/changelog' },
+                { name: 'Result<T, E>', path: '/docs/primitives/result' },
+                { name: 'createApiClient()', path: '/docs/primitives/api-client' },
+                { name: 'create[Method]Handler()', path: '/docs/primitives/get-post-handler' },
+                { name: 'withServerAction()', path: '/docs/primitives/server-action' },
+                { name: 'verifyHmacSignature()', path: '/docs/primitives/webhook' },
+                { name: 'withAuth()', path: '/docs/primitives/auth' },
+                { name: 'Pagination helpers', path: '/docs/primitives/pagination' },
+                { name: 'createRateLimiter()', path: '/docs/primitives/rate-limiter' },
+                { name: 'withCache()', path: '/docs/primitives/cache' },
               ].map((item) => {
                 const active = isActive(item.path);
                 return (
@@ -147,22 +151,18 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             </ul>
           </div>
 
-          {/* Group 3: Primitives */}
+          {/* Group 3: CLI de Génération */}
           <div>
             <h4 className="text-[#8E8E8A] font-bold uppercase tracking-wider text-[10px] mb-4 flex items-center gap-1.5 px-3">
-              <Code size={12} className="text-[#FF6A00]" />
-              <span>Primitives</span>
+              <Terminal size={12} className="text-[#FF6A00]" />
+              <span>CLI de Génération</span>
             </h4>
             <ul className="space-y-1">
               {[
-                { name: 'Result<T, E>', path: '/docs/primitives/result' },
-                { name: 'createApiClient()', path: '/docs/primitives/api-client' },
-                { name: 'createGetHandler()', path: '/docs/primitives/get-post-handler' },
-                { name: 'withServerAction()', path: '/docs/primitives/server-action' },
-                { name: 'createWebhookHandler()', path: '/docs/primitives/webhook' },
-                { name: 'withAuth()', path: '/docs/primitives/auth' },
-                { name: 'withPagination()', path: '/docs/primitives/pagination' },
-                { name: 'withIdempotency()', path: '/docs/primitives/idempotency' },
+                { name: 'Introduction & Setup', path: '/docs/cli/setup' },
+                { name: 'Commande : init', path: '/docs/cli/init' },
+                { name: 'Commande : add api', path: '/docs/cli/add-api' },
+                { name: 'Commande : add action', path: '/docs/cli/add-action' },
               ].map((item) => {
                 const active = isActive(item.path);
                 return (
