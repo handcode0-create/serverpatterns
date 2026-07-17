@@ -12,6 +12,13 @@
   --color-paper: #F5F5F3;
   --color-muted: #1A1A1A;
   --color-card: #121212;
+
+  --font-size-swiss-xs: 12px;
+  --font-size-swiss-sm: 16px;
+  --font-size-swiss-md: 21px;
+  --font-size-swiss-lg: 28px;
+  --font-size-swiss-xl: 37px;
+  --font-size-swiss-xxl: 50px;
 }
 
 @layer utilities {

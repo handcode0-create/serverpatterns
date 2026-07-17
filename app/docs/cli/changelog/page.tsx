@@ -47,7 +47,7 @@ export default function CliChangelogPage() {
 
           <h3 className="font-display font-semibold text-white text-base" id="package-cli">Outil CLI @serverpatterns/cli</h3>
           <ul className="text-xs text-[#8E8E8A] space-y-2 pl-4 list-disc leading-relaxed">
-            <li>Commande <code className="font-mono text-white text-[11px]">init</code> : diagnostic interactif complet du projet Next.js et génération du fichier <code className="font-mono text-white text-[11px]">serverpatterns.json</code>.</li>
+            <li>Commande <code className="font-mono text-white text-[11px]">init</code> : diagnostic interactif complet du projet Next.js et initialisation du client d&apos;API.</li>
             <li>Commande <code className="font-mono text-white text-[11px]">add api &lt;nom&gt;</code> : génération instantanée d&apos;un Route Handler Next.js typé et sécurisé par Zod.</li>
             <li>Commande <code className="font-mono text-white text-[11px]">add action &lt;nom&gt;</code> : génération d&apos;une Server Action Next.js sécurisée par Zod.</li>
           </ul>

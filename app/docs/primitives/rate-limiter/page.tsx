@@ -31,7 +31,7 @@ export default function PrimitiveRateLimiterPage() {
           <h2 className="font-display text-xl font-semibold text-white">Limitation robuste &amp; Stores interchangeables</h2>
         </div>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          La primitive <code className="font-mono text-[#FF6A00]">createRateLimiter</code> permet de définir des limites strictes de requêtes sur une fenêtre de temps donnée. Elle est livrée par défaut avec un stockage en mémoire (<code className="font-mono text-xs text-white">MemoryRateLimitStore</code>) et définit un contrat simple (<code className="font-mono text-xs text-white">RateLimitStore</code>) pour brancher facilement Redis ou tout autre système de persistance distribué.
+          La primitive <code className="font-mono text-[#FF6A00]">createRateLimiter</code> permet de définir des limites strictes de requêtes sur une fenêtre de temps donnée. Elle est livrée par défaut avec un stockage en mémoire (<code className="font-mono text-xs text-white">createInMemoryRateLimitStore()</code>) et définit un contrat simple (<code className="font-mono text-xs text-white">RateLimitStore</code>) pour brancher facilement Redis ou tout autre système de persistance distribué.
         </p>
       </section>
 
@@ -44,20 +44,24 @@ export default function PrimitiveRateLimiterPage() {
   increment(key: string, ttlMs: number): Promise<void>;
 }
 
-export interface RateLimiterConfig {
-  store?: RateLimitStore; // défaut: MemoryRateLimitStore
-  limit: number; // nombre de requêtes autorisées
-  windowMs: number; // fenêtre de temps en millisecondes
-  keyPrefix?: string; // préfixe des clés dans le store
+export interface RateLimitResult {
+  allowed: boolean;
+  remaining: number;
+  resetAt: number;
 }
 
-export function createRateLimiter(config: RateLimiterConfig): (key: string) => Promise<
-  Result<{
-    limit: number;
-    remaining: number;
-    reset: number;
-  }, ServerPatternsError>
->;`}
+export interface RateLimiterOptions {
+  limit: number; // nombre de requêtes autorisées
+  windowMs: number; // fenêtre de temps en millisecondes
+  store?: RateLimitStore; // défaut: créé via createInMemoryRateLimitStore()
+}
+
+export interface RateLimiter {
+  check(key: string): Promise<RateLimitResult>;
+}
+
+export function createRateLimiter(options: RateLimiterOptions): RateLimiter;
+export function createInMemoryRateLimitStore(): RateLimitStore;`}
           title="@serverpatterns/core"
         />
       </section>
@@ -70,14 +74,13 @@ export function createRateLimiter(config: RateLimiterConfig): (key: string) => P
         </p>
         <CodeBlock 
           code={`import { createPostHandler } from "@serverpatterns/next";
-import { createRateLimiter, isErr, ok, err, ServerPatternsError } from "@serverpatterns/core";
+import { createRateLimiter, ok, err, ServerPatternsError } from "@serverpatterns/core";
 import { z } from "zod";
 
 // Limite : 100 requêtes toutes les 15 minutes
 const loginLimiter = createRateLimiter({
   limit: 100,
   windowMs: 15 * 60 * 1000,
-  keyPrefix: "login-limit:"
 });
 
 export const POST = createPostHandler({
@@ -87,13 +90,8 @@ export const POST = createPostHandler({
     const ip = request.headers.get("x-forwarded-for") ?? "127.0.0.1";
     
     // 2. Vérifier la limite de débit
-    const limitCheck = await loginLimiter(ip);
-    if (isErr(limitCheck)) {
-      return err(new ServerPatternsError("SERVER_ERROR", "Échec de vérification du limiteur"));
-    }
-
-    const { remaining, limit, reset } = limitCheck.data;
-    if (remaining < 0) {
+    const limitCheck = await loginLimiter.check(ip);
+    if (!limitCheck.allowed) {
       return err(new ServerPatternsError("UNAUTHORIZED", "Trop de tentatives. Veuillez réessayer plus tard.", { status: 429 }));
     }
 

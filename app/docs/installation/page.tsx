@@ -170,7 +170,7 @@ export default function DocsInstallation() {
             </div>
 
             <Callout title="Initialisation Express" type="recommendation">
-              L&apos;initialisation automatique installe toutes les dépendances requises (<code className="font-mono text-xs text-white">@serverpatterns/core</code>, <code className="font-mono text-xs text-white">@serverpatterns/next</code>, <code className="font-mono text-xs text-white">zod</code>), configure le fichier <code className="font-mono text-xs text-white">serverpatterns.json</code> et provisionne un client d&apos;API prêt à l&apos;emploi.
+              L&apos;initialisation automatique installe toutes les dépendances requises (<code className="font-mono text-xs text-white">@serverpatterns/core</code>, <code className="font-mono text-xs text-white">@serverpatterns/next</code>, <code className="font-mono text-xs text-white">zod</code>) et provisionne un client d&apos;API prêt à l&apos;emploi.
             </Callout>
           </div>
         )}
@@ -192,7 +192,7 @@ export default function DocsInstallation() {
             </div>
 
             <Callout title="Cohérence d'architecture" type="info">
-              L&apos;assistant détectera si votre projet est structuré avec un dossier <code className="font-mono text-xs text-white">src/</code> ou non et adaptera les chemins de génération d&apos;API client et d&apos;actions en conséquence dans votre <code className="font-mono text-xs text-white">serverpatterns.json</code>.
+              L&apos;assistant détectera si votre projet est structuré avec un dossier <code className="font-mono text-xs text-white">src/</code> ou non et adaptera les chemins de génération d&apos;API client et d&apos;actions en conséquence.
             </Callout>
           </div>
         )}
@@ -214,24 +214,16 @@ export default function DocsInstallation() {
             </div>
 
             <div className="space-y-3 pt-4">
-              <h3 className="font-display font-bold text-sm text-white" id="result-helper">2. Créer le Helper de Result</h3>
+              <h3 className="font-display font-bold text-sm text-white" id="result-helper">2. Structure du type de Result</h3>
               <p className="text-xs text-[#8E8E8A] leading-relaxed">
-                Créez un fichier utilitaire pour unifier le pattern de retour :
+                Le noyau du framework s&apos;appuie sur une structure de type unifiée et monadique pour représenter les succès et les échecs :
               </p>
               <CodeBlock 
-                code={`// src/lib/utils/result.ts
-export type Result<T, E = Error> =
-  | { ok: true; value: T; isOk(): true; isErr(): false }
-  | { ok: false; error: E; isOk(): false; isErr(): true };
-
-export function ok<T>(value: T): Result<T, any> {
-  return { ok: true, value, isOk: () => true, isErr: () => false };
-}
-
-export function err<E>(error: E): Result<any, E> {
-  return { ok: false, error, isOk: () => false, isErr: () => true };
-}`}
-                title="src/lib/utils/result.ts"
+                code={`// Signature issue de @serverpatterns/core
+export type Result<T, E = ServerPatternsError> =
+  | { success: true; data: T }
+  | { success: false; error: E };`}
+                title="@serverpatterns/core"
               />
             </div>
 

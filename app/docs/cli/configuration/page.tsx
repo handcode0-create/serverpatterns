@@ -2,8 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Info, Settings } from 'lucide-react';
-import CodeBlock from '@/components/CodeBlock';
+import { ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 import Callout from '@/components/Callout';
 
 export default function CliConfigurationPage() {
@@ -14,72 +13,25 @@ export default function CliConfigurationPage() {
           Configuration du CLI
         </h1>
         <p className="text-base text-[#8E8E8A] leading-relaxed">
-          Comprendre et personnaliser la structure de génération du CLI avec le fichier de configuration locale.
+          Découvrez la philosophie de configuration de ServerPatterns.
         </p>
       </div>
 
       <div className="h-[1px] bg-white/10" />
 
-      {/* Configuration file */}
+      {/* Philosophy of zero-config */}
       <div className="space-y-4">
         <h2 className="font-display text-lg font-semibold text-white flex items-center gap-2">
           <Settings size={18} className="text-[#FF6A00]" />
-          <span>Le fichier serverpatterns.json</span>
+          <span>Zéro configuration</span>
         </h2>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Pour la V1, le CLI de ServerPatterns s&apos;appuie exclusivement sur un fichier de configuration statique léger à la racine de votre projet appelé <code className="font-mono text-xs text-white">serverpatterns.json</code>.
+          ServerPatterns ne nécessite aucune configuration pour l&apos;instant — toutes les options se choisissent de façon interactive au moment de l&apos;exécution du CLI.
         </p>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Il est créé automatiquement par la commande <code className="font-mono text-xs text-[#FF6A00]">serverpatterns init</code> mais peut être édité manuellement à tout moment pour modifier les répertoires cibles de génération.
-        </p>
-
-        <CodeBlock
-          code={`{
-  "srcDir": true,
-  "apiDir": "src/app/api",
-  "actionsDir": "src/app/actions",
-  "clientPath": "src/lib/api.ts"
-}`}
-          title="serverpatterns.json"
-        />
       </div>
 
-      {/* Property details */}
-      <div className="space-y-4 pt-4">
-        <h2 className="font-display text-lg font-semibold text-white">Description des propriétés</h2>
-        <div className="space-y-4 text-xs">
-          <div className="p-4 bg-white/[0.01] border border-white/5 rounded-xl">
-            <span className="font-mono text-[#FF6A00] font-bold block mb-1">srcDir (boolean)</span>
-            <p className="text-[#8E8E8A] leading-relaxed">
-              Indique si votre application Next.js utilise l&apos;arborescence du répertoire <code className="font-mono text-white text-[11px]">src/</code>. Si activé, toutes les générations automatiques cibleront ce dossier.
-            </p>
-          </div>
-
-          <div className="p-4 bg-white/[0.01] border border-white/5 rounded-xl">
-            <span className="font-mono text-[#FF6A00] font-bold block mb-1">apiDir (string)</span>
-            <p className="text-[#8E8E8A] leading-relaxed">
-              Le chemin relatif vers votre répertoire de Route Handlers. C&apos;est dans ce dossier que la commande <code className="font-mono text-white text-[11px]">serverpatterns add api</code> ira créer de nouveaux sous-répertoires d&apos;API.
-            </p>
-          </div>
-
-          <div className="p-4 bg-white/[0.01] border border-white/5 rounded-xl">
-            <span className="font-mono text-[#FF6A00] font-bold block mb-1">actionsDir (string)</span>
-            <p className="text-[#8E8E8A] leading-relaxed">
-              Le chemin relatif vers votre répertoire de Server Actions. La commande <code className="font-mono text-white text-[11px]">serverpatterns add action</code> y créera vos fichiers d&apos;actions typées.
-            </p>
-          </div>
-
-          <div className="p-4 bg-white/[0.01] border border-white/5 rounded-xl">
-            <span className="font-mono text-[#FF6A00] font-bold block mb-1">clientPath (string)</span>
-            <p className="text-[#8E8E8A] leading-relaxed">
-              Le chemin relatif où votre client d&apos;API centralisé a été créé. Pour la version future, cela permettra d&apos;injecter ou mettre à jour automatiquement les types réseaux.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <Callout title="Pas d&apos;over-engineering" type="info">
-        Pour la version V1.0, aucune autre configuration complexe ou fichier TS/JS additionnel n&apos;est requis. L&apos;architecture de ServerPatterns est conçue pour rester simple, explicite et facile à maintenir par vos outils d&apos;intégration continue.
+      <Callout title="Simplicité avant tout" type="info">
+        Pour garantir une expérience de développement fluide (DX), nous évitons l&apos;over-engineering des fichiers de configuration statiques. Vos choix d&apos;architecture sont détectés ou demandés dynamiquement lors de l&apos;exécution des commandes.
       </Callout>
 
       {/* Navigation Précédent / Suivant */}

@@ -512,17 +512,17 @@ export const updateInventory = withAuth({
   };
 
   return (
-    <div id="interactive-terminal-section" className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full max-w-6xl mx-auto px-4">
+    <div id="interactive-terminal-section" className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full max-w-7xl mx-auto">
       
       {/* Simulation Controls & Terminal Window (L: 6 cols) */}
       <div className="lg:col-span-6 flex flex-col gap-4">
         
         {/* Commands Selection Header */}
-        <div className="flex bg-[#121212] p-1.5 rounded-xl border border-white/5 gap-1 shadow-md">
+        <div className="flex bg-[#121212] p-1 border border-white/10 gap-1 rounded-none">
           <button
             id="cmd-select-init"
             onClick={() => changeCommand('init')}
-            className={`flex-1 py-2 text-xs font-mono rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-mono rounded-none transition-all ${
               activeCommand === 'init'
                 ? 'bg-[#FF6A00] text-black font-semibold'
                 : 'text-[#8E8E8A] hover:bg-white/5 hover:text-white'
@@ -533,7 +533,7 @@ export const updateInventory = withAuth({
           <button
             id="cmd-select-add-api"
             onClick={() => changeCommand('add-api')}
-            className={`flex-1 py-2 text-xs font-mono rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-mono rounded-none transition-all ${
               activeCommand === 'add-api'
                 ? 'bg-[#FF6A00] text-black font-semibold'
                 : 'text-[#8E8E8A] hover:bg-white/5 hover:text-white'
@@ -544,7 +544,7 @@ export const updateInventory = withAuth({
           <button
             id="cmd-select-add-action"
             onClick={() => changeCommand('add-action')}
-            className={`flex-1 py-2 text-xs font-mono rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-mono rounded-none transition-all ${
               activeCommand === 'add-action'
                 ? 'bg-[#FF6A00] text-black font-semibold'
                 : 'text-[#8E8E8A] hover:bg-white/5 hover:text-white'
@@ -555,35 +555,37 @@ export const updateInventory = withAuth({
         </div>
 
         {/* The CLI Window */}
-        <div className="bg-[#0B0B0B] border border-white/10 rounded-2xl flex flex-col h-[380px] shadow-2xl relative overflow-hidden group">
+        <div className="bg-[#0B0B0B] border border-white/10 rounded-none flex flex-col h-[380px] relative overflow-hidden group">
           
-          {/* Mac-like Header */}
-          <div className="bg-[#141414] border-b border-white/5 px-4 py-3 flex items-center justify-between">
-            <div className="flex gap-2">
-              <span className="w-3 h-3 rounded-full bg-red-500/40" />
-              <span className="w-3 h-3 rounded-full bg-yellow-500/40" />
-              <span className="w-3 h-3 rounded-full bg-green-500/40" />
-            </div>
+          {/* Swiss-like Header */}
+          <div className="bg-[#141414] border-b border-white/10 px-4 py-3 flex items-center justify-between">
+            <span className="text-[11px] font-mono text-[#FF6A00] uppercase tracking-widest font-bold">
+              {"// SESSION: CLI_SIMULATION"}
+            </span>
             <span className="text-[11px] font-mono text-[#8E8E8A] flex items-center gap-1.5">
               <Terminal size={12} className="text-[#FF6A00]" />
-              clack-terminal-session
+              clack-terminal
             </span>
-            <div className="w-12" />
           </div>
 
           {/* Terminal Screen Output */}
           <div className="p-5 flex-1 font-mono text-xs md:text-sm leading-relaxed overflow-y-auto text-[#F5F5F3] flex flex-col gap-1.5 scrollbar-thin">
             {terminalLines.length === 0 && (
-              <div className="text-[#52524E] flex flex-col items-center justify-center h-full gap-3">
-                <Terminal size={32} className="stroke-1 text-[#FF6A00]/40 animate-pulse" />
-                <span className="text-xs">Prêt pour la simulation interacte.</span>
+              <div className="text-[#52524E] flex flex-col items-start justify-center h-full gap-4 p-4">
+                <div className="flex items-center gap-2">
+                  <Terminal size={20} className="text-[#FF6A00]/60" />
+                  <span className="text-xs uppercase tracking-wider text-[#8E8E8A]">SYSTÈME PRÊT</span>
+                </div>
+                <p className="text-xs text-[#8E8E8A] max-w-sm text-left">
+                  Démarrez la simulation interactive pour voir comment le générateur échafaude vos fichiers selon les meilleures pratiques.
+                </p>
                 <button
                   id="btn-run-sim-center"
                   onClick={startSimulation}
-                  className="flex items-center gap-1.5 bg-[#FF6A00] text-black font-semibold px-4 py-2 rounded-lg text-xs hover:bg-[#E05D00] transition active:scale-95 shadow-md"
+                  className="flex items-center gap-1.5 bg-[#FF6A00] text-black font-semibold px-4 py-2.5 rounded-none text-xs hover:bg-[#E05D00] transition active:scale-95"
                 >
                   <Play size={12} fill="currentColor" />
-                  Lancer la démo
+                  LANCER LA DÉMO
                 </button>
               </div>
             )}
@@ -608,7 +610,7 @@ export const updateInventory = withAuth({
               <button
                 id="btn-reset-sim"
                 onClick={() => resetSimulation()}
-                className="bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-lg transition shadow-md"
+                className="bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-none transition"
                 title="Recommencer"
               >
                 <RotateCcw size={13} />
@@ -617,7 +619,7 @@ export const updateInventory = withAuth({
                 <button
                   id="btn-run-sim-again"
                   onClick={startSimulation}
-                  className="bg-[#FF6A00] text-black font-semibold px-3 py-1.5 text-xs rounded-lg transition hover:bg-[#E05D00] flex items-center gap-1 shadow-md"
+                  className="bg-[#FF6A00] text-black font-semibold px-3 py-1.5 text-xs rounded-none transition hover:bg-[#E05D00] flex items-center gap-1"
                 >
                   <Play size={11} fill="currentColor" />
                   Relancer
@@ -642,7 +644,7 @@ export const updateInventory = withAuth({
                   key={tabKey}
                   id={`tab-select-${tabKey.replace(/[\/.]/g, '-')}`}
                   onClick={() => setActiveGeneratedTab(tabKey)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all border ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-none text-xs font-mono transition-all border ${
                     isSelected
                       ? 'bg-[#121212] text-[#FF6A00] border-[#FF6A00]/20 font-medium'
                       : 'text-[#8E8E8A] border-transparent hover:text-white hover:bg-white/5'
@@ -654,16 +656,16 @@ export const updateInventory = withAuth({
               );
             })}
           </div>
-          <span className="text-[10px] font-mono text-[#52524E] hidden sm:inline-block">
-            FICHIER GÉNÉRÉ
+          <span className="text-[10px] font-mono text-[#52524E] hidden sm:inline-block tracking-widest uppercase">
+            {"// OUTPUT_FILE"}
           </span>
         </div>
 
         {/* Real code output box */}
         <div className="relative flex-1 min-h-[380px] flex flex-col">
           {step < (activeCommand === 'init' ? 7 : 8) && isRunning ? (
-            <div className="flex-1 flex flex-col items-center justify-center bg-[#121212] rounded-2xl border border-white/5 text-center p-8 text-[#52524E] gap-3">
-              <div className="w-8 h-8 rounded-full border-2 border-[#FF6A00]/20 border-t-[#FF6A00] animate-spin" />
+            <div className="flex-1 flex flex-col items-center justify-center bg-[#121212] rounded-none border border-white/10 text-center p-8 text-[#52524E] gap-3">
+              <div className="w-8 h-8 rounded-none border-2 border-[#FF6A00]/20 border-t-[#FF6A00] animate-spin" />
               <span className="text-xs font-mono text-[#8E8E8A]">En attente de la génération par le CLI...</span>
             </div>
           ) : (
@@ -671,19 +673,16 @@ export const updateInventory = withAuth({
               <CodeBlock
                 code={generatedFiles[activeGeneratedTab]?.code || ''}
                 title={generatedFiles[activeGeneratedTab]?.title || 'Aperçu'}
-                className="h-full flex-1 border-white/5 bg-[#121212]"
+                className="h-full flex-1 border-white/10 bg-[#121212] rounded-none"
               />
               
               {/* Feature highlight card */}
-              <div className="mt-4 p-4 rounded-xl border border-[#FF6A00]/10 bg-[#FF6A00]/5 flex items-start gap-3 animate-[fadeIn_0.3s_ease-out]">
-                <div className="p-1 rounded-lg bg-[#FF6A00]/10 text-[#FF6A00]">
-                  <Check size={14} className="stroke-[3]" />
-                </div>
+              <div className="mt-4 p-4 border-l-2 border-[#FF6A00] bg-[#FF6A00]/5 flex items-start gap-4 animate-[fadeIn_0.3s_ease-out] rounded-none">
                 <div>
-                  <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono mb-1">
+                  <h4 className="text-swiss-xs font-bold text-white uppercase tracking-wider font-mono mb-1">
                     Avantage de cette structure
                   </h4>
-                  <p className="text-xs text-[#8E8E8A] leading-relaxed">
+                  <p className="text-swiss-xs text-[#8E8E8A] leading-relaxed">
                     {activeCommand === 'init' && 
                       "Initialise un conteneur d'API centralisé. Votre code applicatif n'importe que ce client d'API, assurant des politiques de sécurité et des headers uniformes sans duplication."
                     }

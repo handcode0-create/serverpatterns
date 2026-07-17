@@ -31,7 +31,7 @@ export default function PrimitiveCachePage() {
           <h2 className="font-display text-xl font-semibold text-white">Cache transparent &amp; Extensible</h2>
         </div>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          La fonction d&apos;ordre supérieur (Higher-Order Function) <code className="font-mono text-[#FF6A00]">withCache</code> permet de mémoïser de façon asynchrone le résultat d&apos;appels à des bases de données ou à des APIs tierces. Par défaut, elle utilise un stockage mémoire interne (<code className="font-mono text-xs text-white">MemoryCacheStore</code>) et définit une interface standardisée (<code className="font-mono text-xs text-white">CacheStore</code>) pour y coupler Redis ou Memcached en production.
+          La fonction d&apos;ordre supérieur (Higher-Order Function) <code className="font-mono text-[#FF6A00]">withCache</code> permet de mémoïser de façon asynchrone le résultat d&apos;appels à des bases de données ou à des APIs tierces. Par défaut, elle utilise un stockage mémoire interne (<code className="font-mono text-xs text-white">createInMemoryCacheStore()</code>) et définit une interface standardisée (<code className="font-mono text-xs text-white">CacheStore</code>) pour y coupler Redis ou Memcached en production.
         </p>
       </section>
 
@@ -41,18 +41,19 @@ export default function PrimitiveCachePage() {
         <CodeBlock 
           code={`export interface CacheStore {
   get<T>(key: string): Promise<T | undefined>;
-  set<T>(key: string, value: T, ttlSeconds?: number): Promise<void>;
+  set<T>(key: string, value: T, ttlMs?: number): Promise<void>;
 }
 
 export interface WithCacheOptions {
-  store?: CacheStore; // défaut: MemoryCacheStore
-  ttlSeconds: number; // durée de vie en secondes
+  store?: CacheStore; // défaut: créé via createInMemoryCacheStore()
+  ttlMs: number; // durée de vie en millisecondes
 }
 
 export function withCache<TArgs extends unknown[], TResult>(
   fn: (...args: TArgs) => Promise<TResult>,
   options: WithCacheOptions
-): (...args: TArgs) => Promise<TResult>;`}
+): (...args: TArgs) => Promise<TResult>;
+export function createInMemoryCacheStore(): CacheStore;`}
           title="@serverpatterns/core"
         />
       </section>
@@ -64,7 +65,7 @@ export function withCache<TArgs extends unknown[], TResult>(
           Voici comment optimiser un service de récupération de météo ou d&apos;articles de blog lourds :
         </p>
         <CodeBlock 
-          code={`import { withCache, MemoryCacheStore } from "@serverpatterns/core";
+          code={`import { withCache, createInMemoryCacheStore } from "@serverpatterns/core";
 
 interface WeatherData {
   temp: number;
@@ -79,7 +80,7 @@ async function fetchWeatherFromThirdParty(city: string): Promise<WeatherData> {
 
 // Version optimisée avec cache (durée de vie : 10 minutes)
 export const getCachedWeather = withCache(fetchWeatherFromThirdParty, {
-  ttlSeconds: 600, // 10 minutes
+  ttlMs: 10 * 60 * 1000, // 10 minutes (600 000 ms)
 });
 
 // Utilisation transparente :

@@ -42,14 +42,22 @@ export default function PrimitiveAuthPage() {
       <section className="space-y-4" id="signature">
         <h2 className="font-display text-lg font-bold text-white">Signature TypeScript Core</h2>
         <CodeBlock 
-          code={`export interface WithAuthOptions<TInput, TSession, TResult> {
-  inputSchema: z.ZodType<TInput>;
-  getSession: () => Promise<TSession | null>;
-  action: (input: TInput, session: TSession) => Promise<Result<TResult, ServerPatternsError>>;
+          code={`export interface AuthSession {
+  userId: string;
+  roles: string[];
 }
 
-export function withAuth<TInput, TSession, TResult>(
-  options: WithAuthOptions<TInput, TSession, TResult>
+export type GetSessionFn = () => Promise<AuthSession | null>;
+
+export interface WithAuthOptions<TInput, TResult> {
+  getSession: GetSessionFn;
+  requiredRoles?: string[]; // RBAC — omis = toute session valide suffit, pas de contrainte de rôle
+  inputSchema: z.ZodType<TInput>;
+  action: (input: TInput, session: AuthSession) => Promise<Result<TResult, ServerPatternsError>>;
+}
+
+export function withAuth<TInput, TResult>(
+  options: WithAuthOptions<TInput, TResult>
 ): (input: TInput) => Promise<Result<TResult, ServerPatternsError>>;`}
           title="@serverpatterns/next"
         />
@@ -59,22 +67,21 @@ export function withAuth<TInput, TSession, TResult>(
       <section className="space-y-4 pt-4" id="initialisation">
         <h2 className="font-display text-lg font-bold text-white">1. Définir le résolveur de Session</h2>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          En convention d&apos;architecture, implémentez la méthode d&apos;extraction de session dans <code className="font-mono text-xs text-white">lib/auth/session.ts</code> :
+          En convention d&apos;architecture, implémentez la méthode d&apos;extraction de session dans <code className="font-mono text-xs text-white">lib/auth/session.ts</code> en respectant la signature <code className="font-mono text-xs text-white">AuthSession</code> :
         </p>
         <CodeBlock 
           code={`import { getServerSession } from "next-auth"; // ou Clerk, Supabase...
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { AuthSession } from "@serverpatterns/next";
 
-export interface SessionUser {
-  id: string;
-  name: string;
-  email: string;
-}
-
-export async function getSession(): Promise<SessionUser | null> {
+export async function getSession(): Promise<AuthSession | null> {
   const session = await getServerSession(authOptions);
   if (!session?.user) return null;
-  return session.user as SessionUser;
+  
+  return {
+    userId: session.user.id,
+    roles: session.user.roles ?? ["user"], // Garantit un tableau de rôles
+  };
 }`}
           title="lib/auth/session.ts"
         />
@@ -82,36 +89,33 @@ export async function getSession(): Promise<SessionUser | null> {
 
       {/* Code Example: Usage */}
       <section className="space-y-4 pt-4" id="usage-actions">
-        <h2 className="font-display text-lg font-bold text-white">2. Sécurisation des Actions Serveur</h2>
+        <h2 className="font-display text-lg font-bold text-white">2. Sécurisation des Actions Serveur avec RBAC</h2>
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Sécurisez vos opérations serveurs dans <code className="font-mono text-xs text-white">lib/actions/</code> :
+          Sécurisez vos opérations serveurs dans <code className="font-mono text-xs text-white">lib/actions/</code> grâce à un contrôle d&apos;accès basé sur les rôles (<strong className="text-white">requiredRoles</strong>) :
         </p>
         <CodeBlock 
           code={`"use server";
-
+ 
 import { withAuth } from "@serverpatterns/next";
 import { ok, err, ServerPatternsError } from "@serverpatterns/core";
 import { getSession } from "@/lib/auth/session";
 import { z } from "zod";
-
+ 
 const deleteArticleSchema = z.object({
   articleId: z.string(),
 });
-
+ 
 export const deleteArticle = withAuth({
   inputSchema: deleteArticleSchema,
   getSession,
+  requiredRoles: ["admin"], // Seuls les utilisateurs avec le rôle "admin" peuvent exécuter cette action
   action: async (input, session) => {
     // input est typé et garanti valide
-    // session contient les détails de l'utilisateur authentifié
+    // session est typé selon AuthSession (contient userId et roles)
     try {
       const article = await db.articles.findById(input.articleId);
       if (!article) {
         return err(new ServerPatternsError("NOT_FOUND", "Article introuvable"));
-      }
-      
-      if (article.authorId !== session.id) {
-        return err(new ServerPatternsError("UNAUTHORIZED", "Vous n'êtes pas l'auteur de cet article"));
       }
 
       await db.articles.delete(input.articleId);

@@ -82,27 +82,22 @@ export async function saveTask(title: string): Promise<Result<Task, Error>> {
 import { createPostHandler } from '@serverpatterns/next';
 import { saveTask } from '@/lib/services/tasks';
 import { z } from 'zod';
+import { ok, err, ServerPatternsError } from '@serverpatterns/core';
 
 export const POST = createPostHandler({
   // Zod analyse le JSON d'entrée automatiquement
-  schema: z.object({
+  bodySchema: z.object({
     title: z.string().min(3, "Le titre doit faire au moins 3 caractères.")
   }),
   
-  handler: async ({ body }) => {
+  handler: async (body) => {
     const result = await saveTask(body.title);
     
-    if (result.isErr()) {
-      return {
-        status: 400,
-        body: { error: result.error.message }
-      };
+    if (!result.success) {
+      return err(new ServerPatternsError("VALIDATION_ERROR", result.error.message, { status: 400 }));
     }
 
-    return {
-      status: 201,
-      body: result.value
-    };
+    return ok(result.data);
   }
 });`}
           title="src/app/api/tasks/route.ts"
@@ -134,12 +129,12 @@ export default function CreateTaskForm() {
     // Entièrement typé de bout en bout
     const res = await api.post<Task>('/api/tasks', { title });
 
-    if (res.isErr()) {
+    if (!res.success) {
       console.error("Erreur de requête: " + res.error.message);
       return;
     }
 
-    console.log(\`Tâche créée avec succès ! ID: \${res.value.id}\`);
+    console.log(\`Tâche créée avec succès ! ID: \${res.data.id}\`);
   };
 
   return (

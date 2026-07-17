@@ -53,10 +53,10 @@ export default function PackageManagerTabs({ pnpm, npm, yarn, bun }: PackageMana
   };
 
   return (
-    <div className="border border-white/5 bg-[#121212]/50 rounded-xl overflow-hidden font-mono text-xs my-6">
+    <div className="border border-white/10 bg-[#121212]/50 rounded-none overflow-hidden font-mono text-xs my-6">
       
       {/* Tabs Header */}
-      <div className="flex items-center justify-between px-4 bg-[#0B0B0B] border-b border-white/5 h-10 select-none">
+      <div className="flex items-center justify-between px-4 bg-[#0B0B0B] border-b border-white/10 h-10 select-none">
         <div className="flex gap-4">
           {(['pnpm', 'npm', 'yarn', 'bun'] as const).map((tab) => (
             <button
@@ -77,7 +77,7 @@ export default function PackageManagerTabs({ pnpm, npm, yarn, bun }: PackageMana
         {/* Copy Button */}
         <button
           onClick={handleCopy}
-          className="p-1 rounded hover:bg-white/5 text-white/40 hover:text-white transition flex items-center gap-1 text-[10px]"
+          className="p-1 rounded-none hover:bg-white/5 text-white/40 hover:text-white transition flex items-center gap-1 text-[10px]"
           title="Copier la commande"
         >
           {copied ? (

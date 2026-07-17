@@ -101,7 +101,7 @@ export default function GuideFeedbackBoard() {
         </div>
 
         <CodeBlock 
-          title="app/actions/vote.ts"
+          title="lib/actions/vote.ts"
           code={`'use server';
 
 import { z } from 'zod';
@@ -109,7 +109,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { revalidatePath } from 'next/cache';
 import { withServerAction } from '@serverpatterns/next';
-import { ok, err } from '@serverpatterns/core';
+import { ok, err, ServerPatternsError } from '@serverpatterns/core';
 
 // 1. Schéma de validation strict
 export const VoteInputSchema = z.object({
@@ -124,9 +124,9 @@ export interface Suggestion {
 
 const FILE_PATH = path.join(process.cwd(), 'data/suggestions.json');
 
-export const vote = withServerAction(
-  VoteInputSchema,
-  async (data) => {
+export const vote = withServerAction({
+  inputSchema: VoteInputSchema,
+  action: async (data) => {
     try {
       const { id } = data;
 
@@ -136,7 +136,7 @@ export const vote = withServerAction(
 
       const item = suggestions.find(s => s.id === id);
       if (!item) {
-        return err({ code: 'NOT_FOUND', message: 'Suggestion introuvable' });
+        return err(new ServerPatternsError("NOT_FOUND", "Suggestion introuvable"));
       }
 
       // Incrémentation et normalisation robuste
@@ -148,14 +148,10 @@ export const vote = withServerAction(
       revalidatePath('/feedback');
       return ok(item);
     } catch (error: any) {
-      return err({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Impossible de traiter le vote',
-        details: error?.message,
-      });
+      return err(new ServerPatternsError("SERVER_ERROR", "Impossible de traiter le vote", { cause: error }));
     }
-  }
-);`}
+  },
+});`}
         />
       </div>
 
@@ -195,28 +191,28 @@ export async function incrementVote(id: string) {
           </div>
 
           <div>
-            <span className="text-[11px] font-mono text-[#8E8E8A] block mb-2">2. Server Action épurée (app/actions/vote.ts)</span>
+            <span className="text-[11px] font-mono text-[#8E8E8A] block mb-2">2. Server Action épurée (lib/actions/vote.ts)</span>
             <CodeBlock 
-              title="app/actions/vote.ts"
+              title="lib/actions/vote.ts"
               code={`'use server';
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { withServerAction } from '@serverpatterns/next';
-import { ok, err } from '@serverpatterns/core';
+import { ok, err, ServerPatternsError } from '@serverpatterns/core';
 import { incrementVote } from '@/lib/db';
 
-export const vote = withServerAction(
-  z.object({ id: z.string().min(1) }),
-  async (data) => {
+export const vote = withServerAction({
+  inputSchema: z.object({ id: z.string().min(1) }),
+  action: async (data) => {
     const updated = await incrementVote(data.id);
     if (!updated) {
-      return err({ code: 'NOT_FOUND', message: 'Non trouvé' });
+      return err(new ServerPatternsError("NOT_FOUND", "Non trouvé"));
     }
     revalidatePath('/feedback');
     return ok(updated);
-  }
-);`}
+  },
+});`}
             />
           </div>
         </div>
@@ -236,11 +232,11 @@ export const vote = withServerAction(
 
         <CodeBlock 
           title="Commande"
-          code="npx @serverpatterns/cli add action vote --fields id:string"
+          code="npx serverpatterns add action vote"
         />
 
         <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          En une seule commande, vous obtenez un fichier pré-configuré intégrant le décorateur <code className="text-white font-mono bg-white/5 px-1 py-0.5 rounded text-[11px]">withServerAction</code>, le schéma Zod typé, et la structure de retour de résultats sécurisée <code className="text-white font-mono bg-white/5 px-1 py-0.5 rounded text-[11px]">Result&lt;T, E&gt;</code>.
+          Le CLI te demande ensuite chaque champ un par un (nom, type, optionnel ou non) jusqu&apos;à ce que tu laisses le nom vide pour terminer, avant de générer le fichier pré-configuré intégrant le décorateur <code className="text-white font-mono bg-white/5 px-1 py-0.5 rounded text-[11px]">withServerAction</code>, le schéma Zod typé, et la structure de retour de résultats sécurisée <code className="text-white font-mono bg-white/5 px-1 py-0.5 rounded text-[11px]">Result&lt;T, E&gt;</code>.
         </p>
       </div>
 

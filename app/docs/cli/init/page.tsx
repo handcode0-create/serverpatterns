@@ -83,23 +83,7 @@ export default function CliInitPage() {
         </p>
 
         <div className="space-y-4">
-          <h3 className="font-mono text-xs text-white font-bold">1. serverpatterns.json</h3>
-          <p className="text-xs text-[#8E8E8A]">
-            Ce fichier indique au CLI où générer vos Route Handlers et vos Server Actions lors des commandes d&apos;ajout ultérieures :
-          </p>
-          <CodeBlock
-            code={`{
-  "srcDir": true,
-  "apiDir": "src/app/api",
-  "actionsDir": "src/app/actions",
-  "clientPath": "src/lib/api.ts"
-}`}
-            title="serverpatterns.json"
-          />
-        </div>
-
-        <div className="space-y-4 pt-2">
-          <h3 className="font-mono text-xs text-white font-bold">2. src/lib/api.ts</h3>
+          <h3 className="font-mono text-xs text-white font-bold">src/lib/api.ts</h3>
           <p className="text-xs text-[#8E8E8A]">
             Le client réseau unifié pré-configuré, prêt à être consommé côté client dans vos composants React :
           </p>
