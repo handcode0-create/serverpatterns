@@ -132,6 +132,26 @@ test("createApiClient : l'annulation par l'appelant est signalée comme telle", 
   assert.match(result.error.message, /annulée/);
 });
 
+test("createApiClient : baseUrl relative côté serveur → Result en erreur, pas d'exception", async () => {
+  const result = await createApiClient({ baseUrl: "/api" }).get("/users");
+  assert.ok(isErr(result));
+  assert.equal(result.error.code, "VALIDATION_ERROR");
+  assert.match(result.error.message, /absolue/);
+});
+
+test("createApiClient : baseUrl relative résolue contre l'origine dans le navigateur", async (t) => {
+  const srv = await startServer((req, res) => {
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ url: req.url }));
+  });
+  t.after(srv.close);
+  globalThis.location = { origin: srv.baseUrl };
+  t.after(() => delete globalThis.location);
+  const result = await createApiClient({ baseUrl: "/api" }).get("/users/1");
+  assert.ok(isOk(result));
+  assert.equal(result.data.url, "/api/users/1");
+});
+
 test("createApiClient : serveur injoignable → NETWORK_ERROR", async () => {
   const result = await createApiClient({ baseUrl: "http://127.0.0.1:1" }).get("/");
   assert.equal(result.error.code, "NETWORK_ERROR");

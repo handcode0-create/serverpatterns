@@ -17,8 +17,10 @@
 ## 🔲 Reste à faire avant de publier
 
 ### Qualité du code
-- [x] Tests unitaires (36, `npm test` après `npm run build`) sur core, next et cli.
+- [x] Tests unitaires (38, `npm test` après `npm run build`) sur core, next et cli.
 - [x] Correction des bugs du rapport du 06/10/2026 : CLI qui écrivait dans `app/` sur les projets `src/app` (masquait toute l'app), import cassé pour les noms composés (`order-items`), `lib/auth/session.ts` jamais généré pour les actions RBAC, PATCH/DELETE sans id (routes `[id]` désormais), cache des erreurs dans `withCache`, signature Stripe (séparateur `.`) et `v1` multiples, erreurs de `createApiClient` (corps non-JSON, corps d'erreur perdu, timeout ignoré avec un `signal`), fuite mémoire du rate limiter, messages Zod illisibles, import `next/server` incompatible Node ESM, `zod` inutile dans `core`, `tsconfig.tsbuildinfo` qui empêchait `core` d'être rebuild après un `npm run clean`.
+- [x] Corrections du 28/10/2026 : compatibilité Zod 4 (`zod` devient peer dependency `^3.23.0 || ^4.0.0`, schémas typés structurellement), `baseUrl` relative de `createApiClient` (erreur au lieu d'exception côté serveur, résolue dans le navigateur), commentaire « fenêtre glissante » corrigé en « fenêtre fixe », CLI : libellés Oui/Non et placeholder du champ vide.
+- [x] Site de documentation (`apps/www`) refait : contenu vérifié contre le code, exemples compilés (`npm run check:examples`), sorties du CLI et signatures générées (`npm run sync`).
 - [ ] **Validation MVP réelle** : brancher le framework sur un vrai endpoint d'un projet HANCODE STUDIO (ECORG ou Prestige Drive) — c'est le critère de succès du MVP défini dans le PRD, pas une formalité. Publier sur npm avant cette étape veut dire publier quelque chose que tu n'as toi-même jamais utilisé en conditions réelles.
 
 ### Compte et organisation npm

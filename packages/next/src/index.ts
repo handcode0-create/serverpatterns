@@ -24,3 +24,5 @@ export {
   type GetSessionFn,
   type WithAuthOptions,
 } from "./auth.js";
+
+export { type SchemaLike, type SafeParseResultLike, type ValidationIssueLike } from "./zod-error.js";

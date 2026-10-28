@@ -1,6 +1,7 @@
 /**
- * Primitive de rate limiting — générique, algorithme "fenêtre glissante"
- * simple. Le store par défaut est en mémoire (suffisant pour un seul serveur
+ * Primitive de rate limiting — générique, algorithme "fenêtre fixe" (la fenêtre
+ * démarre à la première requête d'une clé et se réinitialise à expiration).
+ * Le store par défaut est en mémoire (suffisant pour un seul serveur
  * ou du prototypage) ; pour un déploiement multi-instance (Vercel avec
  * plusieurs régions, par exemple), fournis ton propre `RateLimitStore` branché
  * sur Redis/Upstash via l'interface ci-dessous — ServerPatterns ne t'enferme

@@ -19,7 +19,7 @@ npm install @serverpatterns/core
 | `createApiClient` | Client HTTP typé (GET/POST/PUT/PATCH/DELETE) avec gestion d'erreurs unifiée |
 | `parsePaginationParams`, `createPaginatedResult`, `paginateInMemory` | Pagination générique (listes de produits, contacts, stock...) |
 | `verifyHmacSignature`, `verifyTimestampedHmacSignature` | Vérification de signature webhook (HMAC-SHA256, format Wave/Stripe) |
-| `createRateLimiter`, `createInMemoryRateLimitStore` | Rate limiting à fenêtre glissante |
+| `createRateLimiter`, `createInMemoryRateLimitStore` | Rate limiting à fenêtre fixe |
 | `withCache`, `createInMemoryCacheStore` | Cache TTL pour appels de lecture fréquents |
 
 ## Usage — client API
@@ -48,7 +48,7 @@ Erreurs renvoyées (jamais d'exception) :
 | 200 avec un corps non-JSON | `SERVER_ERROR` | — | début du corps reçu |
 | Timeout, annulation, serveur injoignable | `NETWORK_ERROR` | — | — |
 
-`timeoutMs` (défaut 10 s) s'applique toujours, y compris si tu passes ton propre `signal`.
+`timeoutMs` (défaut 10 s) s'applique toujours, y compris si tu passes ton propre `signal`. Côté serveur, `baseUrl` doit être absolue ; dans le navigateur, une URL relative (`/api`) est résolue contre l'origine de la page. Une URL invalide donne un `Result` en erreur, jamais une exception.
 
 ## Usage — pagination
 

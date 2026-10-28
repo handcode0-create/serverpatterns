@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import { confirm } from "../utils/prompts.js";
 import { detectProjectLayout, fileExists, isNextProject, writeGeneratedFile } from "../utils/fs.js";
 
 /** Devine le gestionnaire de paquets à partir du lockfile présent. */
@@ -17,7 +18,7 @@ export async function runInit(): Promise<void> {
     p.log.warn(
       "Aucune dépendance \"next\" trouvée dans package.json. Lance cette commande à la racine d'un projet Next.js (App Router)."
     );
-    const proceed = await p.confirm({ message: "Continuer quand même ?", initialValue: false });
+    const proceed = await confirm({ message: "Continuer quand même ?", initialValue: false });
     if (p.isCancel(proceed) || !proceed) {
       p.cancel("Init annulé.");
       return;
@@ -50,7 +51,7 @@ export async function runInit(): Promise<void> {
     process.exit(0);
   }
 
-  const confirmInstall = await p.confirm({
+  const confirmInstall = await confirm({
     message: `Installer @serverpatterns/core, @serverpatterns/next et zod avec ${packageManager} ?`,
   });
 

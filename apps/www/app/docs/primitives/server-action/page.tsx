@@ -1,123 +1,66 @@
-'use client';
-
-import React from 'react';
+import type {Metadata} from 'next';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Zap } from 'lucide-react';
-import CodeBlock from '@/components/CodeBlock';
+import DocPage from '@/components/DocPage';
 import Callout from '@/components/Callout';
+import CodeBlock from '@/components/CodeBlock';
+import Example from '@/components/Example';
 
-export default function PrimitiveServerActionPage() {
+export const metadata: Metadata = {
+  title: 'withServerAction',
+  description: 'Server Action validée, avec un retour { success, data | error } sans exception.',
+};
+
+export default function ServerActionPage() {
   return (
-    <div className="space-y-8">
-      
-      {/* Title */}
-      <div>
-        <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-3">
-          withServerAction()
-        </h1>
-        <p className="text-base text-[#8E8E8A] leading-relaxed">
-          Sécurisez vos Server Actions Next.js contre les injections et simplifiez la gestion du cycle de vie des erreurs côté client avec Zod.
-        </p>
-      </div>
+    <DocPage
+      href="/docs/primitives/server-action"
+      source="app/docs/primitives/server-action/page.tsx"
+      title="withServerAction"
+      lead="Une Server Action est un point d’entrée HTTP public, même si elle ressemble à un appel de fonction. withServerAction valide son entrée et garantit que le client reçoit toujours un objet { success, data } ou { success, error }."
+    >
+      <h2>Signature</h2>
+      <CodeBlock
+        title="@serverpatterns/next"
+        code={`function withServerAction<TInput, TResult>(options: {
+  inputSchema: SchemaLike<TInput>;   // un schéma Zod 3 ou Zod 4
+  action: (input: TInput) => Promise<Result<TResult, ServerPatternsError>>;
+}): (input: TInput) => Promise<ServerActionResult<TResult>>;
 
-      <div className="h-[1px] bg-white/10" />
+type ServerActionResult<TResult> =
+  | { success: true; data: TResult }
+  | { success: false; error: { code: string; message: string } };`}
+      />
+      <p>
+        Côté client, l’erreur est un objet simple <code>{'{ code, message }'}</code> : une instance de classe ne peut
+        pas traverser la frontière serveur/client.
+      </p>
 
-      {/* Description */}
-      <section className="space-y-4" id="securisation">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#FF6A00]/10 text-[#FF6A00]">
-            <Zap size={18} />
-          </div>
-          <h2 className="font-display text-xl font-semibold text-white">Sécurisez vos Server Actions</h2>
-        </div>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Les Server Actions de Next.js facilitent grandement le déclenchement de logique serveur directement depuis le code client. Toutefois, sous le capot, elles restent de simples endpoints HTTP POST déguisés, exposés à l&apos;exécution. Il est donc impératif d&apos;effectuer des contrôles stricts de structure et d&apos;autorisation.
-        </p>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Le wrapper <code className="font-mono text-[#FF6A00]">withServerAction</code> intercepte les paramètres de votre action, effectue une validation de schéma stricte via Zod (<code className="font-mono text-xs text-white">inputSchema</code>), et normalise le retour sous forme de <code className="font-mono text-xs text-white">Result&lt;T, ServerPatternsError&gt;</code> pour le client.
-        </p>
-      </section>
+      <h2>Exemple</h2>
+      <Example file="server-action/lib/actions/update-username.ts" />
+      <Example file="server-action/components/username-form.tsx" />
 
-      {/* Code Example */}
-      <section className="space-y-4 pt-4" id="exemples">
-        <h2 className="font-display text-lg font-bold text-white">Exemple d&apos;action de base de données</h2>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Déclarez une action sécurisée sous le dossier recommandé <code className="font-mono text-xs text-white">lib/actions/</code> :
-        </p>
-        <CodeBlock 
-          code={`"use server";
+      <h2>Ce que fait le wrapper</h2>
+      <ol>
+        <li>Valide l’entrée avec <code>inputSchema</code>. En cas d’échec : <code>VALIDATION_ERROR</code>, l’action n’est pas appelée.</li>
+        <li>Appelle ton action avec l’entrée typée.</li>
+        <li>Transforme le <code>Result</code> en <code>ServerActionResult</code>.</li>
+        <li>
+          Rattrape toute exception levée par l’action. Le client reçoit <code>UNKNOWN_ERROR</code> avec le message
+          « Erreur inattendue » : le message d’origine, qui peut contenir des détails internes, n’est pas exposé. Si
+          l’exception est une <code>ServerPatternsError</code>, son code et son message sont conservés.
+        </li>
+      </ol>
 
-import { withServerAction } from "@serverpatterns/next";
-import { ok, err, ServerPatternsError } from "@serverpatterns/core";
-import { z } from "zod";
-
-const updateUsernameSchema = z.object({
-  userId: z.string(),
-  newUsername: z.string().min(3).max(20),
-});
-
-export const updateUsername = withServerAction({
-  inputSchema: updateUsernameSchema,
-  action: async (input) => {
-    // input est automatiquement validé et typé !
-    try {
-      const success = await db.users.updateName(input.userId, input.newUsername);
-      if (!success) {
-        return err(
-          new ServerPatternsError("NOT_FOUND", "Impossible de mettre à jour le profil")
-        );
-      }
-      return ok({ updated: true, newUsername: input.newUsername });
-    } catch (cause) {
-      return err(
-        new ServerPatternsError("SERVER_ERROR", "Une erreur interne est survenue", { cause })
-      );
-    }
-  },
-});`}
-          title="lib/actions/user.ts"
-        />
-      </section>
-
-      <Callout title="Chemin de fichier standardisé" type="recommendation">
-        Pour une lisibilité accrue par les agents IA et une séparation nette des responsabilités, placez systématiquement vos Server Actions dans <code className="font-mono text-xs text-white">lib/actions/</code> plutôt que dans le dossier d&apos;UI <code className="font-mono text-xs text-white">app/</code>.
+      <Callout title="Qui appelle l’action ?" type="warning">
+        Dans cet exemple, <code>userId</code> vient du client : n’importe qui peut envoyer celui d’un autre utilisateur.
+        Dès qu’une action agit au nom d’un utilisateur, prends son identité dans la session avec{' '}
+        <Link href="/docs/primitives/auth">withAuth</Link>.
       </Callout>
 
-      <div className="h-[1px] bg-white/10 pt-4" />
-
-      {/* Navigation Précédent / Suivant */}
-      <div className="flex justify-between items-center pt-4">
-        <Link
-          href="/docs/primitives/get-post-handler"
-          className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-left transition-all flex items-center gap-3 select-none"
-        >
-          <ChevronLeft size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />
-          <div>
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors">
-              Précédent
-            </span>
-            <span className="block text-xs font-bold text-white">
-              create[Method]Handler
-            </span>
-          </div>
-        </Link>
-
-        <Link
-          href="/docs/primitives/webhook"
-          className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-right transition-all flex items-center gap-3 select-none"
-        >
-          <div>
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors">
-              Suivant
-            </span>
-            <span className="block text-xs font-bold text-white">
-              Signature Webhook HMAC
-            </span>
-          </div>
-          <ChevronRight size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />
-        </Link>
-      </div>
-
-    </div>
+      <p>
+        Range tes actions dans <code>lib/actions/</code> avec la directive <code>&quot;use server&quot;</code> en tête
+        de fichier : c’est là que le CLI les génère.
+      </p>
+    </DocPage>
   );
 }

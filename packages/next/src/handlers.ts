@@ -1,7 +1,6 @@
-import type { z } from "zod";
 import { NextResponse, type NextRequest } from "next/server.js";
 import { isOk, ServerPatternsError, type Result } from "@serverpatterns/core";
-import { formatZodError } from "./zod-error.js";
+import { formatZodError, type SchemaLike } from "./zod-error.js";
 
 /**
  * Contexte passé par Next.js en 2e argument d'un Route Handler. `params` est
@@ -17,7 +16,7 @@ export type RouteParams = Record<string, string | string[]>;
 
 export interface CreateHandlerOptions<TQuery, TResult> {
   /** Schéma Zod de validation des query params (GET) — optionnel */
-  querySchema?: z.ZodType<TQuery>;
+  querySchema?: SchemaLike<TQuery>;
   /** Fonction métier : reçoit les données validées, la requête et les params de route, renvoie un Result */
   handler: (
     input: TQuery,
@@ -28,7 +27,7 @@ export interface CreateHandlerOptions<TQuery, TResult> {
 
 export interface CreatePostHandlerOptions<TBody, TResult> {
   /** Schéma Zod de validation du body — obligatoire pour POST/PATCH/PUT */
-  bodySchema: z.ZodType<TBody>;
+  bodySchema: SchemaLike<TBody>;
   handler: (
     input: TBody,
     request: NextRequest,
@@ -38,7 +37,7 @@ export interface CreatePostHandlerOptions<TBody, TResult> {
 
 export interface CreateDeleteHandlerOptions<TBody, TResult> {
   /** Schéma Zod de validation du body — optionnel, un DELETE n'a souvent pas de corps */
-  bodySchema?: z.ZodType<TBody>;
+  bodySchema?: SchemaLike<TBody>;
   handler: (
     input: TBody,
     request: NextRequest,

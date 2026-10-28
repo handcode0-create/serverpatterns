@@ -1,146 +1,101 @@
-'use client';
-
-import React from 'react';
-import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Shield, ArrowRight } from 'lucide-react';
-import CodeBlock from '@/components/CodeBlock';
+import type {Metadata} from 'next';
+import DocPage from '@/components/DocPage';
+import ApiTable from '@/components/ApiTable';
 import Callout from '@/components/Callout';
+import CodeBlock from '@/components/CodeBlock';
+import Example from '@/components/Example';
 
-export default function PrimitiveGetPostHandlerPage() {
+export const metadata: Metadata = {
+  title: 'Route Handlers',
+  description: 'createGetHandler, createPostHandler, createPutHandler, createPatchHandler, createDeleteHandler.',
+};
+
+export default function HandlersPage() {
   return (
-    <div className="space-y-8">
-      
-      {/* Title */}
-      <div>
-        <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-3">
-          Route Handlers : create[Method]Handler
-        </h1>
-        <p className="text-base text-[#8E8E8A] leading-relaxed">
-          Sécurisez, validez par Zod et encapsulez vos Route Handlers Next.js App Router dans un format d&apos;échange standardisé et infaillible.
-        </p>
+    <DocPage
+      href="/docs/primitives/get-post-handler"
+      source="app/docs/primitives/get-post-handler/page.tsx"
+      title="Route Handlers"
+      lead="Cinq wrappers, un par méthode HTTP. Chacun valide l’entrée avec un schéma Zod, appelle ton handler et transforme le Result renvoyé en réponse JSON avec le bon statut HTTP."
+    >
+      <h2>Les wrappers</h2>
+      <ApiTable
+        rows={[
+          {
+            name: 'createGetHandler',
+            type: '{ querySchema?, handler }',
+            description: 'Valide les paramètres de l’URL (?page=2). Sans querySchema, le handler reçoit les paramètres bruts.',
+          },
+          {name: 'createPostHandler', type: '{ bodySchema, handler }', description: 'Valide le corps JSON. bodySchema est obligatoire.'},
+          {name: 'createPutHandler', type: '{ bodySchema, handler }', description: 'Comme POST, pour un remplacement complet.'},
+          {name: 'createPatchHandler', type: '{ bodySchema, handler }', description: 'Comme POST, pour une mise à jour partielle.'},
+          {
+            name: 'createDeleteHandler',
+            type: '{ bodySchema?, handler }',
+            description: 'Le corps est facultatif : une requête DELETE sans corps est acceptée même si bodySchema est défini.',
+          },
+        ]}
+      />
+      <p>Le handler reçoit trois arguments et renvoie une promesse de <code>Result</code> :</p>
+      <CodeBlock
+        title="Signature du handler"
+        code={`handler: (
+  input: T,               // query ou body déjà validé et typé par le schéma
+  request: NextRequest,   // la requête d'origine (en-têtes, cookies…)
+  params: RouteParams     // segments dynamiques, ex: { id: "42" } pour app/api/products/[id]
+) => Promise<Result<TResult, ServerPatternsError>>
+
+type RouteParams = Record<string, string | string[]>;`}
+      />
+      <p>
+        <code>params</code> est déjà résolu : tu n’as pas à faire <code>await params</code>, que Next.js le fournisse en
+        objet (14) ou en promesse (15 et plus).
+      </p>
+
+      <h2>Collection : liste paginée et création</h2>
+      <Example file="handlers/app/api/products/route.ts" />
+
+      <h2>Élément : lecture, mise à jour, suppression</h2>
+      <Example file="handlers/app/api/products/[id]/route.ts" />
+
+      <h2>Format des réponses</h2>
+      <CodeBlock title="Succès : 200" language="json"
+        wrap code={`{ "success": true, "data": { "id": "p_1", "name": "Attiéké 1 kg", "price": 1500 } }`} />
+      <CodeBlock
+        title="Erreur : statut selon le code"
+        language="json"
+        wrap
+        code={`{ "success": false, "error": { "code": "VALIDATION_ERROR", "message": "price: Too small: expected number to be >0" } }`}
+      />
+      <div className="wide overflow-x-auto">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Cas</th>
+              <th scope="col">Statut HTTP</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Succès</td><td>200</td></tr>
+            <tr><td>JSON invalide ou schéma non respecté</td><td>400</td></tr>
+            <tr><td><code>err(...)</code> avec un <code>status</code> défini</td><td>ce statut (ex: 429)</td></tr>
+            <tr><td><code>VALIDATION_ERROR</code> · <code>UNAUTHORIZED</code> · <code>NOT_FOUND</code></td><td>400 · 401 · 404</td></tr>
+            <tr><td><code>NETWORK_ERROR</code></td><td>502</td></tr>
+            <tr><td><code>SERVER_ERROR</code> · <code>UNKNOWN_ERROR</code></td><td>500</td></tr>
+          </tbody>
+        </table>
       </div>
+      <p>
+        Le message de validation liste chaque champ en erreur : <code>champ: message; autre: message</code>. Le texte
+        exact des messages par défaut dépend de ta version de Zod ; pour un texte maîtrisé, passe-le au schéma, par
+        exemple <code>z.string().min(3, &quot;Trop court&quot;)</code>.
+      </p>
 
-      <div className="h-[1px] bg-white/10" />
-
-      {/* Description */}
-      <section className="space-y-4" id="securite">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#FF6A00]/10 text-[#FF6A00]">
-            <Shield size={18} />
-          </div>
-          <h2 className="font-display text-xl font-semibold text-white">Validation Zod &amp; Réponses unifiées</h2>
-          </div>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Les wrappers <code className="font-mono text-[#FF6A00]">createGetHandler</code>, <code className="font-mono text-[#FF6A00]">createPostHandler</code>, <code className="font-mono text-[#FF6A00]">createPutHandler</code>, <code className="font-mono text-[#FF6A00]">createPatchHandler</code>, et <code className="font-mono text-[#FF6A00]">createDeleteHandler</code> agissent comme des garde-fous pour vos endpoints d&apos;API. Zod valide automatiquement les searchParams entrants (<code className="font-mono text-xs text-white">querySchema</code>) ou le corps de la requête (<code className="font-mono text-xs text-white">bodySchema</code>).
-        </p>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Le handler utilisateur reçoit directement l&apos;entrée validée ainsi que l&apos;objet <code className="font-mono text-xs text-white">NextRequest</code> natif, puis doit retourner un objet <code className="font-mono text-xs text-white">Result</code> (<code className="font-mono text-xs text-white">ok(...)</code> ou <code className="font-mono text-xs text-white">err(...)</code>). Le wrapper gère lui-même la construction de la <code className="font-mono text-xs text-white">NextResponse</code> finale.
-        </p>
-      </section>
-
-      {/* Code Example GET */}
-      <section className="space-y-4 pt-4" id="exemples-get">
-        <h2 className="font-display text-lg font-bold text-white">GET Handler (validation des Query Params)</h2>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Pour les requêtes GET, utilisez <code className="font-mono text-xs text-white">querySchema</code> :
-        </p>
-        <CodeBlock 
-          code={`import { createGetHandler } from "@serverpatterns/next";
-import { ok, err, parsePaginationParams, paginateInMemory } from "@serverpatterns/core";
-import { z } from "zod";
-
-const paginationQuerySchema = z.object({
-  page: z.string().optional(),
-  pageSize: z.string().optional(),
-});
-
-// GET /api/users?page=1&pageSize=10
-export const GET = createGetHandler({
-  querySchema: paginationQuerySchema,
-  handler: async (query, request) => {
-    // query est typé { page?: string, pageSize?: string }
-    const params = parsePaginationParams(query);
-    const users = [{ id: "1", name: "Alice" }, { id: "2", name: "Bob" }];
-    
-    return ok(paginateInMemory(users, params));
-  },
-});`}
-          title="src/app/api/users/route.ts"
-        />
-      </section>
-
-      {/* Code Example POST */}
-      <section className="space-y-4 pt-4" id="exemples-post">
-        <h2 className="font-display text-lg font-bold text-white">POST/PUT/PATCH/DELETE (validation du corps JSON)</h2>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Pour les méthodes modifiant des ressources, utilisez <code className="font-mono text-xs text-white">bodySchema</code> :
-        </p>
-        <CodeBlock 
-          code={`import { createPostHandler } from "@serverpatterns/next";
-import { ok, err, ServerPatternsError } from "@serverpatterns/core";
-import { z } from "zod";
-
-const createFeedbackSchema = z.object({
-  rating: z.number().min(1).max(5),
-  comment: z.string().max(500),
-});
-
-// POST /api/feedback
-export const POST = createPostHandler({
-  bodySchema: createFeedbackSchema,
-  handler: async (body, request) => {
-    // body est typé { rating: number, comment: string } et garanti validé par Zod !
-    try {
-      const feedbackId = await db.feedbacks.save(body.rating, body.comment);
-      return ok({ success: true, feedbackId });
-    } catch (cause) {
-      return err(new ServerPatternsError("SERVER_ERROR", "Échec d'enregistrement", { cause }));
-    }
-  },
-});`}
-          title="src/app/api/feedback/route.ts"
-        />
-      </section>
-
-      <Callout title="Génération automatique d'erreur" type="info">
-        En cas de payload non conforme ou d&apos;erreur retournée par le handler, le wrapper intercepte l&apos;appel et renvoie une réponse standardisée incluant le détail des erreurs. Votre code métier ne s&apos;exécute jamais pour des requêtes corrompues, éliminant totalement les risques de plantage silencieux.
+      <Callout title="Erreur d’une API distante" type="warning">
+        Si ton handler renvoie tel quel le <code>Result</code> d’un <code>createApiClient</code>, le statut de l’API
+        distante est réutilisé (une 404 distante devient ta 404). Le corps de l’erreur distante (
+        <code>details</code>) n’est pas transmis au client.
       </Callout>
-
-      <div className="h-[1px] bg-white/10 pt-4" />
-
-      {/* Navigation Précédent / Suivant */}
-      <div className="flex justify-between items-center pt-4">
-        <Link
-          href="/docs/primitives/api-client"
-          className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-left transition-all flex items-center gap-3 select-none"
-        >
-          <ChevronLeft size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />
-          <div>
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors">
-              Précédent
-            </span>
-            <span className="block text-xs font-bold text-white">
-              createApiClient()
-            </span>
-          </div>
-        </Link>
-
-        <Link
-          href="/docs/primitives/server-action"
-          className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-right transition-all flex items-center gap-3 select-none"
-        >
-          <div>
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors">
-              Suivant
-            </span>
-            <span className="block text-xs font-bold text-white">
-              withServerAction()
-            </span>
-          </div>
-          <ChevronRight size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />
-        </Link>
-      </div>
-
-    </div>
+    </DocPage>
   );
 }

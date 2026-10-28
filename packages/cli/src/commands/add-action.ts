@@ -1,5 +1,6 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import { confirm } from "../utils/prompts.js";
 import {
   detectProjectLayout,
   fileExists,
@@ -25,9 +26,10 @@ async function promptFields(): Promise<ActionField[]> {
   while (true) {
     const rawFieldName = await p.text({
       message: `Nom du champ ${fields.length + 1} (vide pour terminer) :`,
+      placeholder: "(vide pour terminer)",
       validate: (value) =>
         validateFieldName(value) ??
-        (fields.some((f) => f.name === value.trim()) ? "Ce champ existe déjà." : undefined),
+        (fields.some((f) => f.name === (value ?? "").trim()) ? "Ce champ existe déjà." : undefined),
     });
 
     if (p.isCancel(rawFieldName)) {
@@ -54,7 +56,7 @@ async function promptFields(): Promise<ActionField[]> {
       process.exit(0);
     }
 
-    const optional = await p.confirm({
+    const optional = await confirm({
       message: `"${fieldName}" est-il optionnel ?`,
       initialValue: false,
     });
@@ -94,7 +96,7 @@ export async function runAddAction(nameArg?: string): Promise<void> {
 
   const fields = await promptFields();
 
-  const needsAuth = await p.confirm({
+  const needsAuth = await confirm({
     message: "Cette action doit-elle être restreinte à certains rôles (RBAC) ?",
     initialValue: false,
   });
@@ -130,7 +132,7 @@ export async function runAddAction(nameArg?: string): Promise<void> {
   const needsSessionStub = requiredRoles.length > 0 && !(await fileExists(sessionPath));
 
   if (await fileExists(actionPath)) {
-    const overwrite = await p.confirm({
+    const overwrite = await confirm({
       message: `${actionPath} existe déjà. Écraser ?`,
       initialValue: false,
     });

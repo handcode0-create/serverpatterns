@@ -1,5 +1,6 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import { confirm } from "../utils/prompts.js";
 import {
   detectProjectLayout,
   fileExists,
@@ -57,7 +58,7 @@ export async function runAddApi(nameArg?: string): Promise<void> {
     process.exit(0);
   }
 
-  const needsAuth = await p.confirm({
+  const needsAuth = await confirm({
     message: "Ce client a-t-il besoin d'un token Bearer (JWT) dans ses headers ?",
     initialValue: false,
   });
@@ -137,7 +138,7 @@ export async function runAddApi(nameArg?: string): Promise<void> {
   }
 
   if (existing.length > 0) {
-    const overwrite = await p.confirm({
+    const overwrite = await confirm({
       message: `Déjà présent : ${existing.join(", ")}. Écraser ?`,
       initialValue: false,
     });

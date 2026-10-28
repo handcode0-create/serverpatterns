@@ -1,7 +1,6 @@
-import type { z } from "zod";
 import { isOk, ServerPatternsError, type Result } from "@serverpatterns/core";
 import type { ServerActionResult } from "./server-action.js";
-import { formatZodError } from "./zod-error.js";
+import { formatZodError, type SchemaLike } from "./zod-error.js";
 
 /**
  * Session minimale attendue par withAuth. ServerPatterns ne fournit pas de
@@ -21,7 +20,7 @@ export interface WithAuthOptions<TInput, TResult> {
   getSession: GetSessionFn;
   /** Rôles autorisés — si omis, toute session valide suffit (pas de contrainte de rôle) */
   requiredRoles?: string[];
-  inputSchema: z.ZodType<TInput>;
+  inputSchema: SchemaLike<TInput>;
   /** Reçoit l'input validé ET la session — pratique pour scoper une requête à `session.userId` */
   action: (input: TInput, session: AuthSession) => Promise<Result<TResult, ServerPatternsError>>;
 }

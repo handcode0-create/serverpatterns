@@ -1,39 +1,26 @@
-'use client';
-
-import React from 'react';
-import { Sparkles, Info, AlertTriangle } from 'lucide-react';
+import type {ReactNode} from 'react';
+import {Info, TriangleAlert} from 'lucide-react';
 
 interface CalloutProps {
   title: string;
-  children: React.ReactNode;
-  type?: 'recommendation' | 'info' | 'warning';
+  children: ReactNode;
+  /** note : information utile. warning : piège à éviter ou limite connue. */
+  type?: 'note' | 'warning';
 }
 
-export default function Callout({ title, children, type = 'recommendation' }: CalloutProps) {
-  const getIcon = () => {
-    switch (type) {
-      case 'warning':
-        return <AlertTriangle size={15} className="text-[#FF6A00]" />;
-      case 'info':
-        return <Info size={15} className="text-[#FF6A00]" />;
-      default:
-        return <Sparkles size={15} className="text-[#FF6A00]" />;
-    }
-  };
-
+export default function Callout({title, children, type = 'note'}: CalloutProps) {
+  const Icon = type === 'warning' ? TriangleAlert : Info;
   return (
-    <div className="border border-[#FF6A00]/20 bg-[#FF6A00]/5 rounded-xl p-5 my-6 flex gap-3.5 items-start text-left">
-      <div className="p-1 rounded bg-[#FF6A00]/10 text-[#FF6A00] shrink-0 mt-0.5">
-        {getIcon()}
+    <aside
+      className={`flex gap-3 rounded-[10px] border px-4 py-3.5 ${
+        type === 'warning' ? 'border-accent/40 bg-accent/[0.06]' : 'border-line bg-surface'
+      }`}
+    >
+      <Icon size={18} aria-hidden className={`mt-0.5 shrink-0 ${type === 'warning' ? 'text-accent' : 'text-muted'}`} />
+      <div className="min-w-0 space-y-1 text-[0.9375rem]">
+        <p className="font-semibold text-text">{title}</p>
+        <div className="text-[#D6D3CC] [&_code]:text-[0.85em]">{children}</div>
       </div>
-      <div className="space-y-1.5 flex-1">
-        <h5 className="font-display font-bold text-xs uppercase tracking-wider text-[#FF6A00]">
-          {title}
-        </h5>
-        <div className="text-xs text-[#8E8E8A] leading-relaxed font-sans">
-          {children}
-        </div>
-      </div>
-    </div>
+    </aside>
   );
 }

@@ -10,7 +10,7 @@ Fait partie de [ServerPatterns](https://github.com/handcode0-create/serverpatter
 npm install @serverpatterns/core @serverpatterns/next
 ```
 
-Compatible Next.js 14+ (App Router) — testé sur Next 14.2 et Next 16.
+Compatible Next.js 14+ (App Router) — testé sur Next 14.2 et Next 16. `zod` est une peer dependency : Zod 3 (3.23+) et Zod 4 sont acceptés.
 
 ## Ce que contient ce package
 

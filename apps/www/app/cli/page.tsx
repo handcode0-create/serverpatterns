@@ -1,5 +1,6 @@
-import { redirect } from 'next/navigation';
+import {redirect} from 'next/navigation';
 
-export default function CliRedirectPage() {
-  redirect('/docs/cli');
+// Ancienne adresse conservée pour ne pas casser les liens existants.
+export default function Redirect() {
+  redirect('/docs/cli/setup');
 }

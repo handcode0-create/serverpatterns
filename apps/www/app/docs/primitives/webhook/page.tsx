@@ -1,155 +1,85 @@
-'use client';
-
-import React from 'react';
-import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Webhook, ShieldAlert } from 'lucide-react';
-import CodeBlock from '@/components/CodeBlock';
+import type {Metadata} from 'next';
+import DocPage from '@/components/DocPage';
+import ApiTable from '@/components/ApiTable';
 import Callout from '@/components/Callout';
+import Example from '@/components/Example';
 
-export default function PrimitiveWebhookPage() {
+export const metadata: Metadata = {
+  title: 'Signatures webhook',
+  description: 'verifyHmacSignature et verifyTimestampedHmacSignature pour Wave, Stripe, GitHub.',
+};
+
+export default function WebhookPage() {
   return (
-    <div className="space-y-8">
-      
-      {/* Title */}
-      <div>
-        <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-3">
-          Signatures Webhook : verifyHmacSignature
-        </h1>
-        <p className="text-base text-[#8E8E8A] leading-relaxed">
-          Validez les signatures cryptographiques de vos webhooks entrants (Stripe, Lemon Squeezy, GitHub...) de façon robuste, sécurisée et résistante aux attaques par rejeu.
-        </p>
-      </div>
+    <DocPage
+      href="/docs/primitives/webhook"
+      source="app/docs/primitives/webhook/page.tsx"
+      title="Signatures webhook"
+      lead="Avant de traiter un webhook de paiement, vérifie qu’il vient bien du fournisseur. Deux fonctions vérifient une signature HMAC-SHA256 : tu les appelles toi-même dans un Route Handler."
+    >
+      <h2>verifyTimestampedHmacSignature</h2>
+      <p>
+        Pour les en-têtes au format <code>t=&lt;horodatage&gt;,v1=&lt;signature&gt;</code>, utilisé par Wave et Stripe.
+        Elle refuse aussi les messages trop anciens (protection contre le rejeu).
+      </p>
+      <ApiTable
+        rows={[
+          {name: 'rawBody', type: 'string', default: 'requis', description: 'Le corps brut, lu avec request.text().'},
+          {name: 'signatureHeader', type: 'string | null', default: 'requis', description: 'La valeur de l’en-tête de signature.'},
+          {name: 'secret', type: 'string', default: 'requis', description: 'Le secret partagé avec le fournisseur, depuis une variable d’environnement.'},
+          {name: 'toleranceSeconds', type: 'number', default: '300', description: 'Âge maximal accepté du message, en secondes.'},
+          {
+            name: 'payloadSeparator',
+            type: 'string',
+            default: '""',
+            description: (
+              <>
+                Séparateur entre horodatage et corps dans le message signé : <code>&quot;&quot;</code> pour Wave,{' '}
+                <code>&quot;.&quot;</code> pour Stripe.
+              </>
+            ),
+          },
+          {name: 'timestampKey · signatureKey', type: 'string', default: '"t" · "v1"', description: 'Noms des clés dans l’en-tête.'},
+        ]}
+      />
+      <p>
+        Elle renvoie <code>{'{ valid: boolean; reason?: string }'}</code>. Si l’en-tête contient plusieurs signatures{' '}
+        <code>v1</code> (pendant une rotation de secret), une seule valide suffit.
+      </p>
 
-      <div className="h-[1px] bg-white/10" />
+      <h3>Wave</h3>
+      <Example file="webhook/app/api/webhooks/wave/route.ts" />
 
-      {/* Description */}
-      <section className="space-y-4" id="securite-signature">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#FF6A00]/10 text-[#FF6A00]">
-            <Webhook size={18} />
-          </div>
-          <h2 className="font-display text-xl font-semibold text-white">Sécurisation cryptographique</h2>
-        </div>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          La validation de signatures HMAC-SHA256 requiert d&apos;accéder au corps de texte brut (<code className="font-mono text-xs text-white">rawBody</code>) exact de la requête entrante afin d&apos;éviter les altérations lors de la sérialisation JSON.
-        </p>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Le framework ServerPatterns fournit deux primitives de bas niveau dans <code className="font-mono text-xs text-white">@serverpatterns/core</code> pour valider ces signatures sans boilerplate complexe.
-        </p>
-      </section>
-
-      {/* Functions Signatures */}
-      <section className="space-y-4 pt-4" id="signatures">
-        <h2 className="font-display text-lg font-bold text-white">Signatures des Primitives</h2>
-        <CodeBlock 
-          code={`export interface VerificationResult {
-  valid: boolean;
-  reason?: string;
-}
-
-// Vérification HMAC-SHA256 générique, bas niveau.
-export function verifyHmacSignature(options: {
-  rawBody: string;
-  signatureHeader: string | null;
-  secret: string;
-  extractSignature?: (header: string) => string;
-  buildSignedMessage?: (rawBody: string, header: string) => string;
-}): VerificationResult;
-
-// Vérification format "t=<timestamp>,v1=<signature>" (Wave, Stripe...), avec protection anti-rejeu.
-export function verifyTimestampedHmacSignature(options: {
-  rawBody: string;
-  signatureHeader: string | null;
-  secret: string;
-  toleranceSeconds?: number; // défaut: 300
-  timestampKey?: string; // défaut: "t"
-  signatureKey?: string; // défaut: "v1"
-}): VerificationResult;`}
-          title="@serverpatterns/core"
-        />
-      </section>
-
-      {/* Code Example */}
-      <section className="space-y-4 pt-4" id="exemples">
-        <h2 className="font-display text-lg font-bold text-white">Exemple de Webhook Stripe complet</h2>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Voici comment sécuriser un Route Handler Next.js recevant des webhooks Stripe à l&apos;aide de la primitive de signature horodatée :
-        </p>
-        <CodeBlock 
-          code={`import { NextRequest, NextResponse } from "next/server";
-import { verifyTimestampedHmacSignature } from "@serverpatterns/core";
-
-export async function POST(req: NextRequest) {
-  const rawBody = await req.text();
-  const signatureHeader = req.headers.get("stripe-signature");
-  
-  const verification = verifyTimestampedHmacSignature({
-    rawBody,
-    signatureHeader,
-    secret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
-    toleranceSeconds: 300, // 5 minutes de tolérance d'horodatage
-  });
-
-  if (!verification.valid) {
-    return NextResponse.json(
-      { success: false, error: verification.reason ?? "Invalid signature" },
-      { status: 400 }
-    );
-  }
-
-  // Signature valide, traitement du payload
-  const event = JSON.parse(rawBody);
-  
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    // ... Logique métier (activation d'abonnement, etc.)
-  }
-
-  return NextResponse.json({ success: true, received: true });
-}`}
-          title="src/app/api/webhooks/stripe/route.ts"
-        />
-      </section>
-
-      <Callout title="Résilience sur Edge Runtime" type="info">
-        Ces validateurs cryptographiques sont compatibles avec 100% des environnements modernes (dont le Edge Runtime de Next.js, Vercel Edge, Cloudflare Workers, etc.) car ils reposent sur l&apos;API cryptographique standard Web Crypto de l&apos;environnement d&apos;exécution.
+      <h3>Stripe</h3>
+      <Example file="webhook/app/api/webhooks/stripe/route.ts" />
+      <Callout title="Sans payloadSeparator, Stripe échoue" type="warning">
+        Stripe signe <code>horodatage.corps</code>, avec un point. Sans <code>payloadSeparator: &quot;.&quot;</code>,
+        toutes les signatures Stripe sont refusées.
       </Callout>
 
-      <div className="h-[1px] bg-white/10 pt-4" />
+      <h2>verifyHmacSignature</h2>
+      <p>
+        La version bas niveau, sans horodatage. Par défaut, l’en-tête contient la signature hexadécimale du corps brut.{' '}
+        <code>extractSignature</code> et <code>buildSignedMessage</code> s’adaptent aux autres formats.
+      </p>
+      <Example file="webhook/app/api/webhooks/github/route.ts" />
 
-      {/* Navigation Précédent / Suivant */}
-      <div className="flex justify-between items-center pt-4">
-        <Link
-          href="/docs/primitives/server-action"
-          className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-left transition-all flex items-center gap-3 select-none"
-        >
-          <ChevronLeft size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />
-          <div>
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors">
-              Précédent
-            </span>
-            <span className="block text-xs font-bold text-white">
-              withServerAction()
-            </span>
-          </div>
-        </Link>
-
-        <Link
-          href="/docs/primitives/auth"
-          className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-right transition-all flex items-center gap-3 select-none"
-        >
-          <div>
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors">
-              Suivant
-            </span>
-            <span className="block text-xs font-bold text-white">
-              withAuth()
-            </span>
-          </div>
-          <ChevronRight size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />
-        </Link>
-      </div>
-
-    </div>
+      <h2>Points d’attention</h2>
+      <ul>
+        <li>
+          <strong>Lis le corps brut</strong> avec <code>request.text()</code>. Un JSON parsé puis re-sérialisé ne donne
+          pas forcément les mêmes octets, et la signature échoue.
+        </li>
+        <li>
+          <strong>Runtime Node.js uniquement.</strong> La vérification utilise <code>node:crypto</code> : elle ne
+          fonctionne pas sur le runtime Edge. Next.js utilise le runtime Node.js par défaut ;{' '}
+          <code>export const runtime = &quot;nodejs&quot;</code> le rend explicite.
+        </li>
+        <li>
+          <strong>La comparaison est à temps constant</strong> (<code>timingSafeEqual</code>), pour ne pas révéler la
+          signature attendue par mesure du temps de réponse.
+        </li>
+      </ul>
+    </DocPage>
   );
 }

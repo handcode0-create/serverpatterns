@@ -1,5 +1,6 @@
-import { redirect } from 'next/navigation';
+import {redirect} from 'next/navigation';
 
-export default function PrimitivesRedirectPage() {
+// Ancienne adresse conservée pour ne pas casser les liens existants.
+export default function Redirect() {
   redirect('/docs/primitives/result');
 }

@@ -30,6 +30,15 @@ npm run dev
 
 Déploiement (Vercel) : le dossier racine du projet doit être `apps/www`.
 
+Les exemples de code du site sont de vrais fichiers dans `apps/www/examples/`, et le code affiché pour le CLI est produit par ses templates. Après une modification des packages :
+
+```bash
+npm run build                      # à la racine : build des packages
+cd apps/www
+npm run sync                       # régénère lib/generated/ (sorties du CLI, signatures .d.ts, exemples)
+npm run check:examples             # compile chaque exemple contre les vrais packages
+```
+
 ## Installation et build local
 
 ```bash
@@ -60,7 +69,8 @@ serverpatterns add action create-order
 - [x] `@serverpatterns/next` — `createGetHandler`, `createPostHandler`/`PutHandler`/`PatchHandler`/`DeleteHandler`, `withServerAction`, `withAuth` (RBAC)
 - [x] `@serverpatterns/cli` — `init`, `add api` (sélection de méthodes + config JWT), `add action` (builder Zod + RBAC), UX `@clack/prompts`
 - [x] Validation réelle en conditions de projet : `withServerAction` testé et fonctionnel dans un projet Next.js indépendant (feedback board avec vote sur fichier JSON)
-- [x] Tests unitaires : 36 tests (`core` : Result, client API, pagination, webhooks Wave/Stripe, rate limit, cache — `next` : handlers, params `[id]`, Server Actions, RBAC — `cli` : noms, structure `src/`, templates)
+- [x] Tests unitaires : 38 tests (`core` : Result, client API, pagination, webhooks Wave/Stripe, rate limit, cache — `next` : handlers, params `[id]`, Server Actions, RBAC — `cli` : noms, structure `src/`, templates)
+- [x] Compatible Zod 3 et Zod 4 (zod est une peer dependency de `@serverpatterns/next`)
 - [x] CLI vérifié de bout en bout (prompts pilotés comme au clavier) sur Next 14.2 (`app/` à la racine) et Next 16 (`src/app/`) : build OK, routes et actions appelées contre une API distante simulée
 - [ ] Intégration réelle sur un projet HANCODE STUDIO en production (ECORG ou Prestige Drive) — validation MVP complète, cf. PRD section 5.3
 - [ ] Publication npm (voir PRE-PUBLICATION-CHECKLIST.md)

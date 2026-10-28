@@ -1,111 +1,105 @@
-'use client';
-
-import React from 'react';
+import type {Metadata} from 'next';
 import Link from 'next/link';
-import { ArrowRight, Sparkles, ShieldCheck, HeartHandshake, ChevronRight } from 'lucide-react';
+import DocPage from '@/components/DocPage';
 import Callout from '@/components/Callout';
+import {REPO_URL} from '@/lib/docs-nav';
+
+export const metadata: Metadata = {
+  title: 'Introduction',
+  description: 'Ce que fait ServerPatterns, pour qui, et où en est le projet.',
+};
 
 export default function DocsIntroduction() {
   return (
-    <div className="space-y-8">
-      
-      {/* Title */}
-      <div>
-        <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-3">
-          Introduction à ServerPatterns
-        </h1>
-        <p className="text-base text-[#8E8E8A] leading-relaxed">
-          Le framework de standards serveur léger et pragmatique conçu exclusivement pour Next.js App Router par HANCODE STUDIO.
-        </p>
+    <DocPage
+      href="/docs"
+      source="app/docs/page.tsx"
+      title="Introduction"
+      lead="ServerPatterns donne une forme unique à la couche serveur d’une application Next.js App Router : les appels aux API externes, les Route Handlers et les Server Actions s’écrivent de la même façon, d’un fichier à l’autre et d’un projet à l’autre."
+    >
+      <h2>Le problème</h2>
+      <p>
+        Dans une application Next.js, le code qui parle aux API externes finit souvent dupliqué : chaque fichier refait son{' '}
+        <code>fetch</code>, ses en-têtes d’authentification et sa gestion d’erreurs. Un Route Handler renvoie{' '}
+        <code>{'{ error }'}</code>, un autre <code>{'{ message }'}</code>, un troisième laisse fuiter une exception. Les
+        données entrantes sont typées en TypeScript mais rarement validées à l’exécution.
+      </p>
+
+      <h2>Ce que ServerPatterns apporte</h2>
+      <ul>
+        <li>
+          <strong>Un format de retour unique</strong> : chaque fonction renvoie un <code>Result</code>,{' '}
+          <code>{'{ success: true, data }'}</code> ou <code>{'{ success: false, error }'}</code>, au lieu de lever des
+          exceptions.
+        </li>
+        <li>
+          <strong>Des wrappers pour Route Handlers et Server Actions</strong> qui valident l’entrée avec Zod et
+          renvoient toujours la même forme de réponse.
+        </li>
+        <li>
+          <strong>Un client HTTP</strong> pour tes API externes, avec timeout, en-têtes dynamiques et erreurs typées.
+        </li>
+        <li>
+          <strong>Des utilitaires courants</strong> : pagination, vérification de signatures webhook (Wave, Stripe),
+          rate limiting et cache simple.
+        </li>
+        <li>
+          <strong>Un CLI</strong> qui génère ces fichiers dans ton projet, comme le fait shadcn pour les composants :
+          le code généré t’appartient et reste modifiable.
+        </li>
+      </ul>
+
+      <h2>Les trois packages</h2>
+      <div className="wide overflow-x-auto">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Package</th>
+              <th scope="col">Contenu</th>
+              <th scope="col">Dépend de Next.js</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>@serverpatterns/core</code></td>
+              <td>Result, ServerPatternsError, createApiClient, pagination, webhooks, rate limiting, cache</td>
+              <td>Non</td>
+            </tr>
+            <tr>
+              <td><code>@serverpatterns/next</code></td>
+              <td>Route Handlers, withServerAction, withAuth</td>
+              <td>Oui (14 et plus, App Router)</td>
+            </tr>
+            <tr>
+              <td><code>@serverpatterns/cli</code></td>
+              <td>Commandes <code>init</code>, <code>add api</code>, <code>add action</code></td>
+              <td>Génère du code Next.js</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      <div className="h-[1px] bg-white/10" />
+      <h2>Ce que ServerPatterns ne fait pas</h2>
+      <p>
+        Pas de système d’authentification : <code>withAuth</code> se branche sur le tien. Pas de génération depuis un
+        schéma OpenAPI, pas de tableau de bord, pas de télémétrie. Pas d’autre framework que Next.js App Router.
+      </p>
 
-      {/* Philosophy Block */}
-      <div className="space-y-4">
-        <h2 className="font-display text-2xl font-semibold text-white" id="philosophie">
-          La Philosophie
-        </h2>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Next.js App Router offre une flexibilité totale pour concevoir vos services : API Route Handlers, Server Actions, utilitaires locaux... Cette liberté est une bénédiction, mais elle se transforme rapidement en défi d&apos;harmonisation pour les équipes :
-        </p>
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-[#8E8E8A] font-mono">
-          <li className="p-4 bg-white/[0.02] border border-white/5 rounded-xl flex gap-3 items-start">
-            <span className="text-[#FF6A00] font-bold">↳</span>
-            <div>
-              <span className="text-white font-bold block mb-1">Boilerplate dispersé</span>
-              Chaque développeur écrit son fetch, gère ses tokens et configure ses exceptions de façon déstructurée.
-            </div>
-          </li>
-          <li className="p-4 bg-white/[0.02] border border-white/5 rounded-xl flex gap-3 items-start">
-            <span className="text-[#FF6A00] font-bold">↳</span>
-            <div>
-              <span className="text-white font-bold block mb-1">Typage réseau fictif</span>
-              TypeScript compile, mais les payloads dynamiques à l&apos;exécution ne sont jamais réellement audités par Zod.
-            </div>
-          </li>
-        </ul>
-        
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          <strong className="text-white font-medium">ServerPatterns apporte de la discipline sans surcouche lourde.</strong> Il n&apos;y a pas de dépendance magique ou de framework opaque d&apos;API Management. Vous conservez vos bases de données, vos middlewares et vos ORM préférés. ServerPatterns encapsule simplement vos entrées et sorties pour garantir un standard strict et unifié de bout en bout.
-        </p>
-      </div>
-
-      {/* Callout */}
-      <Callout title="Zéro Magie" type="recommendation">
-        ServerPatterns ne remplace pas les routeurs de Next.js, il les sublime. Les fichiers générés par notre CLI sont du pur TypeScript de production, totalement transparent, auditable et modifiable selon les besoins de votre projet.
+      <h2>Où en est le projet</h2>
+      <p>
+        La version 0.1.0 est en préparation. Le code des trois packages est dans le{' '}
+        <a href={REPO_URL}>dépôt GitHub</a>, couvert par 38 tests unitaires, et le CLI a été vérifié de bout en bout sur
+        Next.js 14.2 et Next.js 16, avec Zod 3 et Zod 4.
+      </p>
+      <Callout title="Pas encore sur npm" type="warning">
+        Les packages ne sont pas encore publiés : les commandes <code>npm install</code> et <code>npx</code> de cette
+        documentation fonctionneront dès la publication. En attendant, tu peux{' '}
+        <a href={`${REPO_URL}#tester-le-cli-en-local-sans-publier-sur-npm`}>les tester depuis le dépôt</a>.
       </Callout>
-
-      {/* Core values block */}
-      <div className="space-y-4 pt-4">
-        <h2 className="font-display text-2xl font-semibold text-white" id="valeurs-fondamentales">
-          Valeurs Fondamentales
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-5 bg-white/[0.01] border border-[#FF6A00]/10 rounded-xl">
-            <Sparkles className="text-[#FF6A00] mb-3" size={20} />
-            <h3 className="font-display font-bold text-sm text-white mb-2">Léger &amp; Sûr</h3>
-            <p className="text-[11px] text-[#8E8E8A] leading-relaxed">
-              Pas de runtime lourd ou de serveur additionnel. Moins de 3kb gzipped au total.
-            </p>
-          </div>
-          <div className="p-5 bg-white/[0.01] border border-[#FF6A00]/10 rounded-xl">
-            <ShieldCheck className="text-[#FF6A00] mb-3" size={20} />
-            <h3 className="font-display font-bold text-sm text-white mb-2">Zod Natif</h3>
-            <p className="text-[11px] text-[#8E8E8A] leading-relaxed">
-              La validation est obligatoire pour chaque handler et action généré, assurant un typage sûr à 100%.
-            </p>
-          </div>
-          <div className="p-5 bg-white/[0.01] border border-[#FF6A00]/10 rounded-xl">
-            <HeartHandshake className="text-[#FF6A00] mb-3" size={20} />
-            <h3 className="font-display font-bold text-sm text-white mb-2">Opinionated</h3>
-            <p className="text-[11px] text-[#8E8E8A] leading-relaxed">
-              Une direction claire sur l&apos;architecture de flux de données sans compromis de performance.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="h-[1px] bg-white/10 pt-4" />
-
-      {/* Navigation Précédent / Suivant */}
-      <div className="flex justify-end pt-4">
-        <Link
-          href="/docs/installation"
-          className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-right transition-all flex items-center gap-3 select-none"
-        >
-          <div>
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors">
-              Suivant
-            </span>
-            <span className="block text-xs font-bold text-white">
-              Installation
-            </span>
-          </div>
-          <ChevronRight size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />
-        </Link>
-      </div>
-
-    </div>
+      <p>
+        Pour commencer, lis l’<Link href="/docs/installation">installation</Link> puis le{' '}
+        <Link href="/docs/quickstart">quickstart</Link>.
+      </p>
+    </DocPage>
   );
 }

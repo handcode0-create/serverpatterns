@@ -1,113 +1,110 @@
-'use client';
-
-import React from 'react';
+import type {Metadata} from 'next';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Network } from 'lucide-react';
-import CodeBlock from '@/components/CodeBlock';
+import DocPage from '@/components/DocPage';
+import ApiTable from '@/components/ApiTable';
 import Callout from '@/components/Callout';
+import CodeBlock from '@/components/CodeBlock';
+import Example from '@/components/Example';
 
-export default function PrimitiveApiClientPage() {
+export const metadata: Metadata = {
+  title: 'createApiClient',
+  description: 'Client HTTP typé qui renvoie toujours un Result, avec timeout et headers dynamiques.',
+};
+
+export default function ApiClientPage() {
   return (
-    <div className="space-y-8">
-      
-      {/* Title */}
-      <div>
-        <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-3">
-          createApiClient(config)
-        </h1>
-        <p className="text-base text-[#8E8E8A] leading-relaxed">
-          Générez un client d&apos;API unifié, léger et hautement typé, capable de traduire les codes HTTP bruts en objets Result structurés.
-        </p>
+    <DocPage
+      href="/docs/primitives/api-client"
+      source="app/docs/primitives/api-client/page.tsx"
+      title="createApiClient"
+      lead="Un client HTTP par API externe : il centralise l’URL de base, les en-têtes et le timeout, et renvoie un Result au lieu de lever une exception, quelle que soit la réponse."
+    >
+      <h2>Créer un client</h2>
+      <Example file="api-client/lib/clients/catalog.ts" />
+      <ApiTable
+        rows={[
+          {
+            name: 'baseUrl',
+            type: 'string',
+            default: 'requis',
+            description: (
+              <>
+                URL de l’API. Côté serveur, elle doit être absolue. Dans le navigateur, une URL relative comme{' '}
+                <code>/api</code> est résolue contre l’origine de la page.
+              </>
+            ),
+          },
+          {
+            name: 'defaultHeaders',
+            type: 'objet ou fonction (sync ou async)',
+            default: 'aucun',
+            description: (
+              <>
+                En-têtes ajoutés à chaque requête. Une fonction est appelée à chaque requête : c’est là que tu lis un
+                cookie avec <code>cookies()</code> ou une variable d’environnement.
+              </>
+            ),
+          },
+          {name: 'timeoutMs', type: 'number', default: '10000', description: 'Délai avant abandon de la requête.'},
+        ]}
+      />
+
+      <h2>Appeler l’API</h2>
+      <CodeBlock
+        title="Méthodes du client"
+        code={`client.get<T>(path, options?)
+client.post<T>(path, body, options?)
+client.put<T>(path, body, options?)
+client.patch<T>(path, body, options?)
+client.delete<T>(path, options?)
+// toutes renvoient Promise<Result<T, ServerPatternsError>>
+
+// options : { headers?, query?: { clé: string | number | boolean | undefined }, signal? }`}
+      />
+      <p>
+        Le corps est envoyé en JSON (<code>Content-Type: application/json</code> seulement s’il y a un corps). Les
+        paramètres <code>query</code> à <code>undefined</code> sont ignorés.
+      </p>
+      <Example file="api-client/lib/services/catalog-service.ts" />
+
+      <h2>Erreurs renvoyées</h2>
+      <div className="wide overflow-x-auto">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Situation</th>
+              <th scope="col">error.code</th>
+              <th scope="col">error.status</th>
+              <th scope="col">error.details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Réponse 400 ou 422</td><td><code>VALIDATION_ERROR</code></td><td>statut reçu</td><td>corps de la réponse</td></tr>
+            <tr><td>Réponse 401 ou 403</td><td><code>UNAUTHORIZED</code></td><td>statut reçu</td><td>corps de la réponse</td></tr>
+            <tr><td>Réponse 404</td><td><code>NOT_FOUND</code></td><td>404</td><td>corps de la réponse</td></tr>
+            <tr><td>Autre statut d’erreur</td><td><code>SERVER_ERROR</code></td><td>statut reçu</td><td>corps de la réponse</td></tr>
+            <tr><td>Réponse 2xx dont le corps n’est pas du JSON</td><td><code>SERVER_ERROR</code></td><td>aucun</td><td>début du corps</td></tr>
+            <tr><td>Timeout, annulation, serveur injoignable</td><td><code>NETWORK_ERROR</code></td><td>aucun</td><td>aucun</td></tr>
+            <tr><td><code>baseUrl</code> relative côté serveur</td><td><code>VALIDATION_ERROR</code></td><td>aucun</td><td>aucun</td></tr>
+          </tbody>
+        </table>
       </div>
+      <p>
+        Une réponse 204 ou un corps vide donne <code>ok(undefined)</code>. Le <code>details</code> d’une erreur
+        contient le JSON parsé, ou le texte brut s’il ne s’agit pas de JSON.
+      </p>
 
-      <div className="h-[1px] bg-white/10" />
-
-      {/* Description */}
-      <section className="space-y-4" id="fonctionnement">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#FF6A00]/10 text-[#FF6A00]">
-            <Network size={18} />
-          </div>
-          <h2 className="font-display text-xl font-semibold text-white">Client HTTP unifié et sûr</h2>
-        </div>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          La méthode <code className="font-mono text-[#FF6A00]">createApiClient</code> élimine l&apos;écriture de wrappers de requêtes `fetch` redondants dans vos composants React. Elle configure de manière centralisée les entêtes (headers), intercepte les requêtes pour injecter des tokens d&apos;authentification de façon dynamique, et retourne des réponses encapsulées dans notre monade de succès ou d&apos;échec.
-        </p>
-      </section>
-
-      {/* Code Example */}
-      <section className="space-y-4 pt-4" id="exemples">
-        <h2 className="font-display text-lg font-bold text-white">Exemple de configuration et d&apos;appels</h2>
-        <p className="text-xs text-[#8E8E8A] leading-relaxed">
-          Créez une seule instance d&apos;API client et utilisez-la indifféremment sur l&apos;ensemble de vos pages client :
-        </p>
-        <CodeBlock 
-          code={`import { createApiClient, isErr, isOk } from '@serverpatterns/core';
-
-export const api = createApiClient({
-  baseUrl: '/api',
-  defaultHeaders: async () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    return token ? { Authorization: \`Bearer \${token}\` } : {};
-  }
-});
-
-// Appels réseau fluides et sécurisés :
-interface User { id: string; name: string; }
-
-async function loadProfile() {
-  const res = await api.get<User>('/user/profile');
-  if (isErr(res)) {
-    console.error("Erreur profile:", res.error.message);
-    return;
-  }
-  
-  // res.data est maintenant garanti de type User !
-  console.log("Bienvenue", res.data.name);
-}`}
-          title="src/lib/api.ts"
-        />
-      </section>
-
-      <Callout title="Sécurité et Hydratation" type="recommendation">
-        Pour éviter des erreurs d&apos;hydratation (Hydration Mismatch) lors du rendu côté serveur, l&apos;injecteur de header effectue une vérification automatique de l&apos;environnement de l&apos;appel (<code className="font-mono text-xs text-white">typeof window !== &apos;undefined&apos;</code>).
+      <Callout title="Le timeout reste actif avec ton propre signal">
+        Si tu passes un <code>signal</code> (par exemple pour annuler une requête), il est combiné au timeout : la
+        requête s’arrête au premier des deux.
       </Callout>
 
-      <div className="h-[1px] bg-white/10 pt-4" />
-
-      {/* Navigation Précédent / Suivant */}
-      <div className="flex justify-between items-center pt-4">
-        <Link
-          href="/docs/primitives/result"
-          className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-left transition-all flex items-center gap-3 select-none"
-        >
-          <ChevronLeft size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />
-          <div>
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors">
-              Précédent
-            </span>
-            <span className="block text-xs font-bold text-white">
-              Result&lt;T, E&gt;
-            </span>
-          </div>
-        </Link>
-
-        <Link
-          href="/docs/primitives/get-post-handler"
-          className="group border border-white/5 bg-[#121212]/50 hover:border-[#FF6A00]/20 hover:bg-[#FF6A00]/5 p-4 rounded-xl text-right transition-all flex items-center gap-3 select-none"
-        >
-          <div>
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors">
-              Suivant
-            </span>
-            <span className="block text-xs font-bold text-white">
-              createGetHandler / createPostHandler
-            </span>
-          </div>
-          <ChevronRight size={16} className="text-[#8E8E8A] group-hover:text-[#FF6A00] transition-colors" />
-        </Link>
-      </div>
-
-    </div>
+      <h2>Depuis le navigateur</h2>
+      <p>
+        Le client fonctionne aussi côté client, avec une <code>baseUrl</code> relative. Mais pour appeler ton propre
+        backend depuis tes composants, une <Link href="/docs/primitives/server-action">Server Action</Link> est plus
+        simple : elle est typée de bout en bout et n’expose aucune URL.
+      </p>
+    </DocPage>
   );
 }

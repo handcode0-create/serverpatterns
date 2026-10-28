@@ -94,7 +94,7 @@ test("withServerAction : succès, validation, erreur métier et exception", asyn
     },
   });
   assert.deepEqual(await action({ n: 2 }), { success: true, data: 4 });
-  assert.equal((await action({ n: "x" })).error.message, "n: Expected number, received string");
+  assert.match((await action({ n: "x" })).error.message, /^n: .*number/i);
   assert.deepEqual(await action({ n: 0 }), { success: false, error: { code: "NOT_FOUND", message: "zéro" } });
   const thrown = await action({ n: -1 });
   assert.equal(thrown.error.code, "UNKNOWN_ERROR");

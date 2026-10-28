@@ -1,148 +1,92 @@
 'use client';
 
-import React, {useState} from 'react';
-import {Copy, Check} from 'lucide-react';
+import {useState} from 'react';
+import {Check, Copy} from 'lucide-react';
 
 interface CodeBlockProps {
   code: string;
-  language?: string;
+  /** Nom de fichier affiché en en-tête (ex: "app/api/users/route.ts") */
   title?: string;
+  /** "ts" (défaut), "json", "bash" ou "text" : règle la coloration */
+  language?: 'ts' | 'json' | 'bash' | 'text';
   className?: string;
+  /** Retour à la ligne au lieu du défilement horizontal (JSON court, texte) */
+  wrap?: boolean;
 }
 
-// Token categories for syntax highlighting:
-// keywords: #FF6A00 (orange)
-// functions: #FFA366 (light orange)
-// types: #E2E2DF (off-white)
-// strings: #8E8E8A (medium grey)
-// comments: #52524E (dark grey)
-// operators: #7A7A75 (grey-grey)
-// variables/ident: #F5F5F3 (warm white)
+const KEYWORDS =
+  'import|export|default|from|as|const|let|var|function|return|async|await|if|else|switch|case|break|try|catch|finally|throw|new|type|interface|extends|implements|typeof|keyof|satisfies|in|of|void|null|undefined|true|false';
 
-export default function CodeBlock({code, title, className = ''}: CodeBlockProps) {
+const TOKEN = new RegExp(
+  [
+    '(?<comment>\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/|#[^\\n]*(?=\\n|$))',
+    '(?<string>"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\'|`(?:\\\\.|[^`\\\\])*`)',
+    `(?<keyword>\\b(?:${KEYWORDS})\\b)`,
+    '(?<type>\\b[A-Z][A-Za-z0-9_]*\\b)',
+    '(?<fn>\\b[a-zA-Z_$][\\w$]*(?=\\s*[(<]))',
+    '(?<number>\\b\\d[\\d_]*(?:\\.\\d+)?\\b)',
+    '(?<punct>[{}()[\\];,.:=<>!?&|+\\-*/%]+)',
+  ].join('|'),
+  'g'
+);
+
+function escapeHtml(text: string) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+export function highlight(code: string, language: CodeBlockProps['language']) {
+  if (language === 'text') return escapeHtml(code);
+  let html = '';
+  let last = 0;
+  for (const match of code.matchAll(TOKEN)) {
+    const index = match.index ?? 0;
+    html += escapeHtml(code.slice(last, index));
+    const groups = match.groups ?? {};
+    const kind = Object.keys(groups).find((key) => groups[key] !== undefined);
+    // En bash, # n'est un commentaire qu'en début de ligne ; en TS/JSON, # n'existe pas.
+    const isHashComment = kind === 'comment' && match[0].startsWith('#');
+    const isSlashComment = kind === 'comment' && match[0].startsWith('//');
+    const effective =
+      (isHashComment && language !== 'bash') || (isSlashComment && language === 'bash') ? undefined : kind;
+    html += effective ? `<span class="tok-${effective}">${escapeHtml(match[0])}</span>` : escapeHtml(match[0]);
+    last = index + match[0].length;
+  }
+  return html + escapeHtml(code.slice(last));
+}
+
+export default function CodeBlock({code, title, language = 'ts', className = '', wrap = false}: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
+  const source = code.replace(/\n+$/, '');
 
-  const handleCopy = async () => {
+  async function copy() {
     try {
-      await navigator.clipboard.writeText(code.trim());
+      await navigator.clipboard.writeText(source);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // Presse-papiers indisponible (contexte non sécurisé) : rien à faire.
     }
-  };
-
-  const highlight = (rawCode: string) => {
-    const tokenRegex = new RegExp(
-      [
-        // Comments
-        `(?<comment>\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/)`,
-        // Strings
-        `(?<string>'(?:\\\\.|[^'\\\\])*'|"(?:\\\\.|[^"\\\\])*"|\\x60(?:\\\\.|[^\\x60\\\\])*\\x60)`,
-        // Keywords
-        `(?<keyword>\\b(?:import|export|default|const|let|function|class|extends|implements|interface|type|async|await|return|try|catch|from|of|in|new|throw|if|else|switch|case|break|as)\\b)`,
-        // Types
-        `(?<type>\\b(?:Result|ApiClientConfig|RouteHandler|ServerAction|ZodSchema|string|number|boolean|any|unknown|never|void|Promise|NextRequest|NextResponse|z|Post|User|ApiResponse|T|E)\\b)`,
-        // Special functions
-        `(?<special_fn>\\b(?:GET|POST|PUT|DELETE|PATCH|ok|err|isOk|isErr|createApiClient|createGetHandler|createPostHandler|withServerAction)\\b)`,
-        // Function calls (identifier followed by paren)
-        `(?<fn_call>\\b[a-zA-Z0-9_]+(?=\\())`,
-        // Operators and Punctuation
-        `(?<operator>===|!==|==|!=|=>|\\+=|-=|\\*=|\\/=|&&|\\|\\||\\?|:|\\+|-|\\*|\\/|%|=|&|\\||\\^|!)`,
-        // Identifiers/Words
-        `(?<identifier>\\b[a-zA-Z_][a-zA-Z0-9_]*\\b)`,
-        // Numbers
-        `(?<number>\\b\\d+(?:\\.\\d+)?\\b)`,
-        // Default whitespace or anything else
-        `(?<whitespace>\\s+)`,
-        // Any other individual character
-        `(?<other>.)`
-      ].join('|'),
-      'g'
-    );
-
-    let match;
-    let htmlResult = '';
-
-    const escapeHtml = (text: string) => {
-      return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    };
-
-    while ((match = tokenRegex.exec(rawCode)) !== null) {
-      const groups = match.groups;
-      if (!groups) {
-        htmlResult += escapeHtml(match[0]);
-        continue;
-      }
-
-      if (groups.comment) {
-        htmlResult += `<span style="color: #52524E">${escapeHtml(groups.comment)}</span>`;
-      } else if (groups.string) {
-        htmlResult += `<span style="color: #8E8E8A">${escapeHtml(groups.string)}</span>`;
-      } else if (groups.keyword) {
-        htmlResult += `<span style="color: #FF6A00">${escapeHtml(groups.keyword)}</span>`;
-      } else if (groups.type) {
-        htmlResult += `<span style="color: #E2E2DF">${escapeHtml(groups.type)}</span>`;
-      } else if (groups.special_fn) {
-        htmlResult += `<span style="color: #FFA366">${escapeHtml(groups.special_fn)}</span>`;
-      } else if (groups.fn_call) {
-        htmlResult += `<span style="color: #FFA366">${escapeHtml(groups.fn_call)}</span>`;
-      } else if (groups.operator) {
-        htmlResult += `<span style="color: #7A7A75">${escapeHtml(groups.operator)}</span>`;
-      } else {
-        htmlResult += escapeHtml(match[0]);
-      }
-    }
-
-    return htmlResult;
-  };
+  }
 
   return (
-    <div id={`codeblock-${title ? title.toLowerCase().replace(/\s+/g, '-') : 'raw'}`} className={`relative flex flex-col rounded-xl border border-white/10 bg-[#121212] overflow-hidden text-left ${className}`}>
-      {title && (
-        <div className="flex items-center justify-between border-b border-white/5 bg-[#181818]/80 px-4 py-2 text-xs font-mono text-[#8E8E8A]">
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-[#FF6A00]/50" />
-            {title}
-          </span>
-          <button
-            id={`btn-copy-${title.toLowerCase().replace(/\s+/g, '-')}`}
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 rounded bg-white/5 px-2 py-1 text-xs text-white/60 transition hover:bg-white/10 hover:text-white"
-            title="Copier le code"
-          >
-            {copied ? (
-              <>
-                <Check size={12} className="text-[#FF6A00]" />
-                <span className="text-[#FF6A00] font-medium">Copié</span>
-              </>
-            ) : (
-              <>
-                <Copy size={12} />
-                <span>Copier</span>
-              </>
-            )}
-          </button>
-        </div>
-      )}
-      {!title && (
+    <figure className={`not-prose overflow-hidden rounded-[10px] border border-line bg-surface ${className}`}>
+      <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2">
+        <figcaption className="truncate font-mono text-[0.8125rem] text-muted">
+          {title ?? (language === 'bash' ? 'Terminal' : 'Exemple')}
+        </figcaption>
         <button
-          id="btn-copy-floating"
-          onClick={handleCopy}
-          className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white"
-          title="Copier le code"
+          type="button"
+          onClick={copy}
+          className="flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[0.8125rem] text-muted transition-colors hover:bg-raised hover:text-text"
+          aria-label={copied ? 'Code copié' : 'Copier le code'}
         >
-          {copied ? <Check size={14} className="text-[#FF6A00]" /> : <Copy size={14} />}
+          {copied ? <Check size={14} className="text-ok" /> : <Copy size={14} />}
+          <span>{copied ? 'Copié' : 'Copier'}</span>
         </button>
-      )}
-      <div className="overflow-x-auto p-4 md:p-5">
-        <pre className="font-mono text-xs md:text-sm leading-relaxed text-[#F5F5F3]">
-          <code dangerouslySetInnerHTML={{__html: highlight(code.trim())}} />
-        </pre>
       </div>
-    </div>
+      <pre className={`${wrap ? 'whitespace-pre-wrap break-words' : 'overflow-x-auto'} px-4 py-4 text-[0.8125rem] leading-[1.7] text-text sm:text-[0.875rem]`}>
+        <code dangerouslySetInnerHTML={{__html: highlight(source, language)}} />
+      </pre>
+    </figure>
   );
 }

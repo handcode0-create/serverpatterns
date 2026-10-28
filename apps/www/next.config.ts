@@ -1,29 +1,19 @@
+import path from 'node:path';
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Le site vit dans apps/www d'un monorepo : la racine du dépôt est deux niveaux au-dessus.
+  // Indiquer la racine évite l'avertissement « multiple lockfiles » au build.
+  outputFileTracingRoot: path.join(process.cwd(), '../..'),
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: false,
   },
-  // Allow access to remote image placeholder.
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-        port: '',
-        pathname: '/**', // This allows any path under the hostname
-      },
-    ],
-  },
-  // output: 'standalone',
-  transpilePackages: ['motion'],
   webpack: (config, {dev}) => {
-    // HMR is disabled in AI Studio via DISABLE_HMR env var.
-    // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+    // HMR désactivé dans AI Studio via DISABLE_HMR (évite le scintillement pendant les éditions).
     if (dev && process.env.DISABLE_HMR === 'true') {
       config.watchOptions = {
         ignored: /.*/,

@@ -5,7 +5,12 @@ export type HeadersResolver =
   | (() => Record<string, string> | Promise<Record<string, string>>);
 
 export interface ApiClientConfig {
-  /** URL de base de l'API, sans slash final (ex: "https://api.example.com") */
+  /**
+   * URL de base de l'API (ex: "https://api.example.com"). Côté serveur, elle
+   * doit être absolue. Dans le navigateur, une URL relative ("/api") est
+   * résolue contre l'origine de la page. Une URL invalide donne un Result en
+   * erreur (VALIDATION_ERROR), jamais une exception.
+   */
   baseUrl: string;
   /**
    * Headers par défaut ajoutés à chaque requête. Peut être un objet statique,
@@ -45,8 +50,19 @@ export interface ApiClient {
   delete<T>(path: string, options?: RequestOptions): Promise<Result<T, ServerPatternsError>>;
 }
 
+/**
+ * Résout baseUrl en URL absolue. Une baseUrl relative ("/api") est résolue
+ * contre l'origine de la page quand elle existe (navigateur) ; côté serveur,
+ * il n'y a pas d'origine et une baseUrl absolue est obligatoire.
+ */
+function resolveBaseUrl(baseUrl: string): string {
+  const withSlash = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+  const origin = (globalThis as { location?: { origin?: string } }).location?.origin;
+  return origin ? new URL(withSlash, origin).toString() : new URL(withSlash).toString();
+}
+
 function buildUrl(baseUrl: string, path: string, query?: RequestOptions["query"]): string {
-  const url = new URL(path.replace(/^\//, ""), baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
+  const url = new URL(path.replace(/^\//, ""), resolveBaseUrl(baseUrl));
   if (query) {
     for (const [key, value] of Object.entries(query)) {
       if (value !== undefined) url.searchParams.set(key, String(value));
@@ -154,7 +170,19 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     body: unknown,
     options?: RequestOptions
   ): Promise<Result<T, ServerPatternsError>> {
-    const url = buildUrl(config.baseUrl, path, options?.query);
+    let url: string;
+    try {
+      url = buildUrl(config.baseUrl, path, options?.query);
+    } catch (cause) {
+      // Jamais d'exception : une baseUrl relative côté serveur devient un Result en erreur.
+      return err(
+        new ServerPatternsError(
+          "VALIDATION_ERROR",
+          `URL invalide : "${config.baseUrl}". Côté serveur, baseUrl doit être absolue (ex: https://api.exemple.com).`,
+          { cause }
+        )
+      );
+    }
     const resolvedDefaultHeaders =
       typeof config.defaultHeaders === "function"
         ? await config.defaultHeaders()

@@ -1,105 +1,96 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Copy, Check } from 'lucide-react';
+import {useEffect, useState} from 'react';
+import {Check, Copy} from 'lucide-react';
+
+import type {PackageManager as Manager} from '@/lib/commands';
+
+const MANAGERS: Manager[] = ['npm', 'pnpm', 'yarn', 'bun'];
+const STORAGE_KEY = 'serverpatterns:package-manager';
+const SYNC_EVENT = 'serverpatterns:package-manager-changed';
 
 interface PackageManagerTabsProps {
-  pnpm: string;
-  npm: string;
-  yarn: string;
-  bun: string;
+  /** Commande par gestionnaire. Les gestionnaires absents ne sont pas proposés. */
+  commands: Partial<Record<Manager, string>>;
+  label?: string;
 }
 
-export default function PackageManagerTabs({ pnpm, npm, yarn, bun }: PackageManagerTabsProps) {
-  const [activeTab, setActiveTab] = useState<'pnpm' | 'npm' | 'yarn' | 'bun'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('preferred-pm') as any;
-      if (saved && ['pnpm', 'npm', 'yarn', 'bun'].includes(saved)) {
-        return saved;
-      }
-    }
-    return 'pnpm';
-  });
+export default function PackageManagerTabs({commands, label = 'Gestionnaire de paquets'}: PackageManagerTabsProps) {
+  const available = MANAGERS.filter((manager) => commands[manager]);
+  // Valeur stable au rendu serveur ; la préférence enregistrée est appliquée après hydratation.
+  const [active, setActive] = useState<Manager>(available[0] ?? 'npm');
   const [copied, setCopied] = useState(false);
 
-  const handleTabChange = (tab: 'pnpm' | 'npm' | 'yarn' | 'bun') => {
-    setActiveTab(tab);
-    localStorage.setItem('preferred-pm', tab);
-    // Custom event to sync other tabs on the same page
-    window.dispatchEvent(new Event('preferred-pm-changed'));
-  };
-
   useEffect(() => {
-    const handleSync = () => {
-      const saved = localStorage.getItem('preferred-pm') as any;
-      if (saved && saved !== activeTab) {
-        setActiveTab(saved);
+    const apply = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY) as Manager | null;
+        if (saved && commands[saved]) setActive(saved);
+      } catch {
+        // stockage indisponible : on garde la valeur par défaut
       }
     };
-    window.addEventListener('preferred-pm-changed', handleSync);
-    return () => window.removeEventListener('preferred-pm-changed', handleSync);
-  }, [activeTab]);
+    apply();
+    window.addEventListener(SYNC_EVENT, apply);
+    return () => window.removeEventListener(SYNC_EVENT, apply);
+  }, [commands]);
 
-  const activeCommand = { pnpm, npm, yarn, bun }[activeTab];
-
-  const handleCopy = async () => {
+  function choose(manager: Manager) {
+    setActive(manager);
     try {
-      await navigator.clipboard.writeText(activeCommand);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error(err);
+      localStorage.setItem(STORAGE_KEY, manager);
+    } catch {
+      // ignoré
     }
-  };
+    window.dispatchEvent(new Event(SYNC_EVENT));
+  }
+
+  const command = commands[active] ?? '';
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(command);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // ignoré
+    }
+  }
 
   return (
-    <div className="border border-white/10 bg-[#121212]/50 rounded-none overflow-hidden font-mono text-xs my-6">
-      
-      {/* Tabs Header */}
-      <div className="flex items-center justify-between px-4 bg-[#0B0B0B] border-b border-white/10 h-10 select-none">
-        <div className="flex gap-4">
-          {(['pnpm', 'npm', 'yarn', 'bun'] as const).map((tab) => (
+    <div className="overflow-hidden rounded-[10px] border border-line bg-surface">
+      <div className="flex items-center justify-between gap-2 border-b border-line pl-2 pr-2">
+        <div role="tablist" aria-label={label} className="flex">
+          {available.map((manager) => (
             <button
-              key={tab}
-              onClick={() => handleTabChange(tab)}
-              className={`relative h-10 text-[11px] font-medium transition-colors ${
-                activeTab === tab ? 'text-white' : 'text-[#8E8E8A] hover:text-white'
+              key={manager}
+              type="button"
+              role="tab"
+              aria-selected={active === manager}
+              onClick={() => choose(manager)}
+              className={`relative px-2.5 py-2 font-mono text-[0.8125rem] transition-colors ${
+                active === manager ? 'text-text' : 'text-muted hover:text-text'
               }`}
             >
-              {tab}
-              {activeTab === tab && (
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#FF6A00]" />
-              )}
+              {manager}
+              {active === manager && <span className="absolute inset-x-2.5 bottom-0 h-0.5 rounded-full bg-accent" />}
             </button>
           ))}
         </div>
-        
-        {/* Copy Button */}
         <button
-          onClick={handleCopy}
-          className="p-1 rounded-none hover:bg-white/5 text-white/40 hover:text-white transition flex items-center gap-1 text-[10px]"
-          title="Copier la commande"
+          type="button"
+          onClick={copy}
+          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[0.8125rem] text-muted transition-colors hover:bg-raised hover:text-text"
+          aria-label={copied ? 'Commande copiée' : 'Copier la commande'}
         >
-          {copied ? (
-            <>
-              <Check size={11} className="text-green-400 stroke-[3]" />
-              <span className="text-green-400">Copié</span>
-            </>
-          ) : (
-            <>
-              <Copy size={11} />
-              <span>Copier</span>
-            </>
-          )}
+          {copied ? <Check size={14} className="text-ok" /> : <Copy size={14} />}
+          <span>{copied ? 'Copié' : 'Copier'}</span>
         </button>
       </div>
-
-      {/* Code Area */}
-      <div className="p-4 bg-black/40 overflow-x-auto text-[#E2E2DF] min-h-[44px] flex items-center">
-        <span className="text-[#FF6A00] mr-2 select-none">$</span>
-        <span className="select-all">{activeCommand}</span>
+      <div className="overflow-x-auto px-4 py-3 font-mono text-[0.875rem]">
+        <span className="select-none text-muted">$ </span>
+        <span className="whitespace-pre text-text">{command}</span>
       </div>
-
     </div>
   );
 }

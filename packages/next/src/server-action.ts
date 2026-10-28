@@ -1,10 +1,9 @@
-import type { z } from "zod";
 import { isOk, ok, err, ServerPatternsError, type Result } from "@serverpatterns/core";
-import { formatZodError } from "./zod-error.js";
+import { formatZodError, type SchemaLike } from "./zod-error.js";
 
 export interface WithServerActionOptions<TInput, TResult> {
   /** Schéma Zod de validation de l'input de la Server Action */
-  inputSchema: z.ZodType<TInput>;
+  inputSchema: SchemaLike<TInput>;
   /** Fonction métier : reçoit l'input validé, renvoie un Result */
   action: (input: TInput) => Promise<Result<TResult, ServerPatternsError>>;
 }
