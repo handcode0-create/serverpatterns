@@ -1,0 +1,29 @@
+{
+  "name": "@serverpatterns/www",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "sync": "node scripts/sync-cli-output.mjs && node scripts/sync-examples.mjs",
+    "check:examples": "node scripts/check-examples.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.553.0",
+    "next": "^15.4.9",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.1.11",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "9.39.1",
+    "eslint-config-next": "16.0.8",
+    "tailwindcss": "4.1.11",
+    "typescript": "5.9.3"
+  }
+}
