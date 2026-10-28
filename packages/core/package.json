@@ -1,0 +1,31 @@
+{
+  "name": "@serverpatterns/core",
+  "version": "0.1.0",
+  "description": "Primitives génériques ServerPatterns : Result, erreurs, client API typé (indépendant de Next.js)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "node --test test/*.test.mjs",
+    "clean": "rimraf dist tsconfig.tsbuildinfo"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "rimraf": "^5.0.7"
+  },
+  "keywords": ["api-client", "result-type", "pagination", "rate-limiting", "cache", "webhook", "typescript"],
+  "author": "HANCODE STUDIO",
+  "homepage": "https://github.com/handcode0-create/serverpatterns#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/handcode0-create/serverpatterns.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/handcode0-create/serverpatterns/issues"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,38 @@
+{
+  "name": "@serverpatterns/cli",
+  "version": "0.1.0",
+  "description": "CLI génératif ServerPatterns — init, add api, add action",
+  "type": "module",
+  "bin": {
+    "serverpatterns": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "node --test test/*.test.mjs",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "picocolors": "^1.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "rimraf": "^5.0.7",
+    "@types/node": "^20.14.0"
+  },
+  "keywords": ["nextjs", "cli", "code-generator", "scaffolding", "typescript"],
+  "author": "HANCODE STUDIO",
+  "homepage": "https://github.com/handcode0-create/serverpatterns#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/handcode0-create/serverpatterns.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/handcode0-create/serverpatterns/issues"
+  },
+  "license": "MIT"
+}

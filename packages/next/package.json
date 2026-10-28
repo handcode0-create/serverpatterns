@@ -1,0 +1,39 @@
+{
+  "name": "@serverpatterns/next",
+  "version": "0.1.0",
+  "description": "Adaptateurs ServerPatterns pour Next.js App Router : Route Handlers et Server Actions typés",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "node --test test/*.test.mjs",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@serverpatterns/core": "0.1.0",
+    "zod": "^3.23.0"
+  },
+  "peerDependencies": {
+    "next": ">=14.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "rimraf": "^5.0.7",
+    "next": "^14.2.0"
+  },
+  "keywords": ["nextjs", "app-router", "server-actions", "route-handlers", "auth", "rbac", "typescript"],
+  "author": "HANCODE STUDIO",
+  "homepage": "https://github.com/handcode0-create/serverpatterns#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/handcode0-create/serverpatterns.git",
+    "directory": "packages/next"
+  },
+  "bugs": {
+    "url": "https://github.com/handcode0-create/serverpatterns/issues"
+  },
+  "license": "MIT"
+}
